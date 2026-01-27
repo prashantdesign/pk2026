@@ -1,3 +1,46 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "proj1-img1",
+      "description": "Abstract branding concept",
+      "imageUrl": "https://images.unsplash.com/photo-1711779323810-c12e1df42816?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YWJzdHJhY3QlMjBicmFuZGluZ3xlbnwwfHx8fDE3Njk1MjU1NzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract branding"
+    },
+    {
+      "id": "proj1-img2",
+      "description": "Branding materials",
+      "imageUrl": "https://images.unsplash.com/photo-1762365189058-7be5b07e038b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YnJhbmQlMjBtYXRlcmlhbHN8ZW58MHx8fHwxNzY5NTMxMDM0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "brand materials"
+    },
+    {
+      "id": "proj2-img1",
+      "description": "Social media post design",
+      "imageUrl": "https://images.unsplash.com/photo-1724862936518-ae7fcfc052c1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzb2NpYWwlMjBtZWRpYXxlbnwwfHx8fDE3Njk0OTY2OTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "social media"
+    },
+    {
+      "id": "proj3-img1",
+      "description": "Magazine print layout",
+      "imageUrl": "https://images.unsplash.com/photo-1616080808758-b8a2fc2ec5d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwcmludCUyMGRlc2lnbnxlbnwwfHx8fDE3Njk1MzEwMzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "print design"
+    },
+    {
+      "id": "proj4-img1",
+      "description": "Mobile app UI design",
+      "imageUrl": "https://images.unsplash.com/photo-1586717799252-bd134ad00e26?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx1aSUyMGRlc2lnbnxlbnwwfHx8fDE3Njk0OTI4MjN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ui design"
+    },
+    {
+      "id": "proj5-img1",
+      "description": "Motion graphics still frame",
+      "imageUrl": "https://images.unsplash.com/photo-1732032506091-6fd57cc3113e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtb3Rpb24lMjBncmFwaGljc3xlbnwwfHx8fDE3Njk1MjcwMjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "motion graphics"
+    },
+    {
+      "id": "proj6-img1",
+      "description": "Another UI/UX project",
+      "imageUrl": "https://images.unsplash.com/photo-1586296835409-fe3fe6b35b56?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx1eCUyMHByb3RvdHlwZXxlbnwwfHx8fDE3Njk1MzEwMzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ux prototype"
+    }
+  ]
 }
