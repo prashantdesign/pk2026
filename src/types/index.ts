@@ -32,10 +32,10 @@ export interface SiteContent {
   };
   about: {
     bio: string;
+    aboutImageUrl: string;
     stats: {
       projects: number;
       experience: number;
-      clients: number;
     };
     tools: string[];
   };

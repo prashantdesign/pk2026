@@ -7,6 +7,7 @@ import * as z from 'zod';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,10 +27,10 @@ const heroSchema = z.object({
 
 const aboutSchema = z.object({
   bio: z.string().min(1, "Bio is required."),
+  aboutImageUrl: z.string().url("A valid image URL is required.").optional().or(z.literal('')),
   stats: z.object({
     projects: z.coerce.number().min(0),
     experience: z.coerce.number().min(0),
-    clients: z.coerce.number().min(0),
   }),
   tools: z.string().transform(val => val.split(',').map(t => t.trim()).filter(Boolean)),
 });
@@ -43,12 +44,13 @@ export default function SiteContentForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       hero: { title: "", subtitle: "", ctaText: "", ctaLink: "", showCta: true },
-      about: { bio: "", stats: { projects: 0, experience: 0, clients: 0 }, tools: [] },
+      about: { bio: "", aboutImageUrl: "", stats: { projects: 0, experience: 0 }, tools: [] },
     },
   });
 
@@ -66,6 +68,9 @@ export default function SiteContentForm() {
           form.setValue('about.bio', aboutData.bio);
           form.setValue('about.stats', aboutData.stats);
           form.setValue('about.tools', aboutData.tools.join(', '));
+          if (aboutData.aboutImageUrl) {
+            form.setValue('about.aboutImageUrl', aboutData.aboutImageUrl);
+          }
         }
       } catch (error) {
         toast({ variant: "destructive", title: "Error fetching content." });
@@ -76,6 +81,26 @@ export default function SiteContentForm() {
     fetchData();
   }, [form, toast]);
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setIsUploading(true);
+      const storage = getStorage();
+      const storageRef = ref(storage, `siteContent/${Date.now()}_${file.name}`);
+
+      try {
+          const snapshot = await uploadBytes(storageRef, file);
+          const downloadURL = await getDownloadURL(snapshot.ref);
+          form.setValue('about.aboutImageUrl', downloadURL);
+          toast({title: "Image uploaded successfully"});
+      } catch (error) {
+          toast({variant: "destructive", title: "Image upload failed"});
+      } finally {
+          setIsUploading(false);
+      }
+  }
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
@@ -84,6 +109,7 @@ export default function SiteContentForm() {
           bio: values.about.bio,
           stats: values.about.stats,
           tools: values.about.tools,
+          aboutImageUrl: values.about.aboutImageUrl || ""
       });
 
       toast({
@@ -140,15 +166,19 @@ export default function SiteContentForm() {
               <FormField control={form.control} name="about.bio" render={({ field }) => (
                 <FormItem><FormLabel>Biography</FormLabel><FormControl><Textarea className="min-h-[120px]" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+               <FormField control={form.control} name="about.aboutImageUrl" render={({ field }) => (
+                <FormItem><FormLabel>Your Picture URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <div>
+                <FormLabel>Or Upload Your Picture</FormLabel>
+                <Input type="file" onChange={handleImageUpload} disabled={isUploading}/>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <FormField control={form.control} name="about.stats.projects" render={({ field }) => (
                     <FormItem><FormLabel>Projects Completed</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField control={form.control} name="about.stats.experience" render={({ field }) => (
                     <FormItem><FormLabel>Years of Experience</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                 <FormField control={form.control} name="about.stats.clients" render={({ field }) => (
-                    <FormItem><FormLabel>Happy Clients</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <FormField control={form.control} name="about.tools" render={({ field }) => (

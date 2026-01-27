@@ -41,6 +41,12 @@
       "description": "Another UI/UX project",
       "imageUrl": "https://images.unsplash.com/photo-1586296835409-fe3fe6b35b56?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx1eCUyMHByb3RvdHlwZXxlbnwwfHx8fDE3Njk1MzEwMzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "ux prototype"
+    },
+    {
+      "id": "about-profile",
+      "description": "User profile picture",
+      "imageUrl": "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwcm9maWxlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY5NDk0NzcwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "profile portrait"
     }
   ]
 }
