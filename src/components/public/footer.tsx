@@ -1,31 +1,90 @@
-import React from 'react';
-import Logo from '../logo';
-import { Button } from '../ui/button';
-import Link from 'next/link';
+'use client';
 
-// You can add your actual social links here
-const socialLinks = [
-    { name: 'Twitter', href: '#' },
-    { name: 'LinkedIn', href: '#' },
-    { name: 'GitHub', href: '#' },
-]
+import React, { useState, useEffect } from 'react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Linkedin, Twitter, Instagram, Mail } from 'lucide-react';
+import Logo from '@/components/logo';
 
-export default function Footer() {
+interface Socials {
+  linkedin?: string;
+  twitter?: string;
+  instagram?: string;
+  email?: string;
+}
+
+const Footer = () => {
+  const [socials, setSocials] = useState<Socials>({});
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    // This will only run on the client, after initial hydration
+    setCurrentYear(new Date().getFullYear());
+
+    const unsub = onSnapshot(doc(db, 'siteContent', 'socials'), (doc) => {
+      if (doc.exists()) {
+        setSocials(doc.data() as Socials);
+      }
+    });
+    return () => unsub();
+  }, []);
+
   return (
-    <footer className="border-t border-border">
-      <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center gap-6">
-        <Logo />
-        <div className="flex gap-2">
-            {socialLinks.map(link => (
-                <Button key={link.name} variant="ghost" asChild>
-                    <Link href={link.href}>{link.name}</Link>
-                </Button>
-            ))}
+    <footer className="border-t">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <Logo />
+          <div className="flex items-center gap-4">
+            {socials.twitter && (
+              <a
+                href={socials.twitter}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Twitter"
+              >
+                <Twitter className="size-5" />
+              </a>
+            )}
+            {socials.linkedin && (
+              <a
+                href={socials.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="size-5" />
+              </a>
+            )}
+            {socials.instagram && (
+              <a
+                href={socials.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="size-5" />
+              </a>
+            )}
+            {socials.email && (
+              <a
+                href={`mailto:${socials.email}`}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Email"
+              >
+                <Mail className="size-5" />
+              </a>
+            )}
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} PK Design Studio. All Rights Reserved.
-        </p>
+        <div className="mt-8 text-center text-sm text-muted-foreground">
+          <p>&copy; {currentYear} PK Design Studio. All rights reserved.</p>
+        </div>
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

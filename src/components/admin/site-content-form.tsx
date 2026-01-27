@@ -36,10 +36,18 @@ const aboutSchema = z.object({
   tools: z.string().transform(val => val.split(',').map(t => t.trim()).filter(Boolean)),
 });
 
+const socialsSchema = z.object({
+    linkedin: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
+    twitter: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
+    instagram: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
+    email: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal('')),
+});
+
 const formSchema = z.object({
   hero: heroSchema,
   about: aboutSchema,
   theme: z.enum(['light', 'dark']).default('dark'),
+  socials: socialsSchema,
 });
 
 export default function SiteContentForm() {
@@ -54,6 +62,7 @@ export default function SiteContentForm() {
       hero: { title: "", subtitle: "", ctaText: "", ctaLink: "", showCta: true },
       about: { bio: "", aboutImageUrl: "", stats: { projects: 0, experience: 0 }, tools: [] },
       theme: 'dark',
+      socials: { linkedin: "", twitter: "", instagram: "", email: "" },
     },
   });
 
@@ -63,6 +72,7 @@ export default function SiteContentForm() {
         const heroDoc = await getDoc(doc(db, "siteContent", "hero"));
         const aboutDoc = await getDoc(doc(db, "siteContent", "about"));
         const themeDoc = await getDoc(doc(db, "siteContent", "theme"));
+        const socialsDoc = await getDoc(doc(db, "siteContent", "socials"));
 
         if (heroDoc.exists()) {
           form.setValue('hero', heroDoc.data() as z.infer<typeof heroSchema>);
@@ -78,6 +88,9 @@ export default function SiteContentForm() {
         }
         if (themeDoc.exists()) {
           form.setValue('theme', themeDoc.data().value as 'light' | 'dark');
+        }
+        if (socialsDoc.exists()) {
+          form.setValue('socials', socialsDoc.data() as z.infer<typeof socialsSchema>);
         }
       } catch (error) {
         toast({ variant: "destructive", title: "Error fetching content." });
@@ -119,6 +132,7 @@ export default function SiteContentForm() {
           aboutImageUrl: values.about.aboutImageUrl || ""
       });
       await setDoc(doc(db, "siteContent", "theme"), { value: values.theme });
+      await setDoc(doc(db, "siteContent", "socials"), values.socials);
 
       toast({
         title: "Content Updated",
@@ -142,7 +156,7 @@ export default function SiteContentForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Accordion type="multiple" defaultValue={['hero', 'about', 'theme']} className="w-full">
+        <Accordion type="multiple" defaultValue={['hero', 'about', 'theme', 'socials']} className="w-full">
           <AccordionItem value="hero">
             <AccordionTrigger className="text-xl font-semibold">Hero Section</AccordionTrigger>
             <AccordionContent className="pt-4 space-y-4">
@@ -227,6 +241,23 @@ export default function SiteContentForm() {
                   </FormItem>
                 )}
               />
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="socials">
+            <AccordionTrigger className="text-xl font-semibold">Contact & Socials</AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              <FormField control={form.control} name="socials.email" render={({ field }) => (
+                  <FormItem><FormLabel>Contact Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="socials.linkedin" render={({ field }) => (
+                  <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input placeholder="https://linkedin.com/in/..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="socials.twitter" render={({ field }) => (
+                  <FormItem><FormLabel>Twitter URL</FormLabel><FormControl><Input placeholder="https://twitter.com/..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="socials.instagram" render={({ field }) => (
+                  <FormItem><FormLabel>Instagram URL</FormLabel><FormControl><Input placeholder="https://instagram.com/..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
             </AccordionContent>
           </AccordionItem>
         </Accordion>

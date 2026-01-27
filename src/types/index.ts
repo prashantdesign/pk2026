@@ -39,6 +39,12 @@ export interface SiteContent {
     };
     tools: string[];
   };
+  socials?: {
+    linkedin?: string;
+    twitter?: string;
+    instagram?: string;
+    email?: string;
+  };
 }
 
 export interface ContactMessage {
