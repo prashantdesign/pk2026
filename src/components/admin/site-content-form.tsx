@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { useFirestore, useDoc } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -17,6 +17,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '../ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const heroSchema = z.object({
   title: z.string().min(1, "Title is required."),
@@ -53,8 +55,20 @@ const formSchema = z.object({
 export default function SiteContentForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const firestore = useFirestore();
+
+  const heroRef = useMemo(() => firestore ? doc(firestore, 'siteContent/hero') : null, [firestore]);
+  const aboutRef = useMemo(() => firestore ? doc(firestore, 'siteContent/about') : null, [firestore]);
+  const themeRef = useMemo(() => firestore ? doc(firestore, 'siteContent/theme') : null, [firestore]);
+  const socialsRef = useMemo(() => firestore ? doc(firestore, 'siteContent/socials') : null, [firestore]);
+
+  const { data: heroData, loading: heroLoading } = useDoc(heroRef);
+  const { data: aboutData, loading: aboutLoading } = useDoc(aboutRef);
+  const { data: themeData, loading: themeLoading } = useDoc(themeRef);
+  const { data: socialsData, loading: socialsLoading } = useDoc(socialsRef);
+
+  const isFetching = heroLoading || aboutLoading || themeLoading || socialsLoading;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,39 +81,19 @@ export default function SiteContentForm() {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const heroDoc = await getDoc(doc(db, "siteContent", "hero"));
-        const aboutDoc = await getDoc(doc(db, "siteContent", "about"));
-        const themeDoc = await getDoc(doc(db, "siteContent", "theme"));
-        const socialsDoc = await getDoc(doc(db, "siteContent", "socials"));
-
-        if (heroDoc.exists()) {
-          form.setValue('hero', heroDoc.data() as z.infer<typeof heroSchema>);
+    if (heroData) form.setValue('hero', heroData as z.infer<typeof heroSchema>);
+    if (aboutData) {
+        const about = aboutData as any;
+        form.setValue('about.bio', about.bio);
+        form.setValue('about.stats', about.stats);
+        form.setValue('about.tools', about.tools.join(', '));
+        if (about.aboutImageUrl) {
+            form.setValue('about.aboutImageUrl', about.aboutImageUrl);
         }
-        if (aboutDoc.exists()) {
-          const aboutData = aboutDoc.data()
-          form.setValue('about.bio', aboutData.bio);
-          form.setValue('about.stats', aboutData.stats);
-          form.setValue('about.tools', aboutData.tools.join(', '));
-          if (aboutData.aboutImageUrl) {
-            form.setValue('about.aboutImageUrl', aboutData.aboutImageUrl);
-          }
-        }
-        if (themeDoc.exists()) {
-          form.setValue('theme', themeDoc.data().value as 'light' | 'dark');
-        }
-        if (socialsDoc.exists()) {
-          form.setValue('socials', socialsDoc.data() as z.infer<typeof socialsSchema>);
-        }
-      } catch (error) {
-        toast({ variant: "destructive", title: "Error fetching content." });
-      } finally {
-        setIsFetching(false);
-      }
-    };
-    fetchData();
-  }, [form, toast]);
+    }
+    if (themeData) form.setValue('theme', (themeData as any).value as 'light' | 'dark');
+    if (socialsData) form.setValue('socials', socialsData as z.infer<typeof socialsSchema>);
+  }, [heroData, aboutData, themeData, socialsData, form]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -122,18 +116,34 @@ export default function SiteContentForm() {
   }
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if(!firestore) return;
     setIsLoading(true);
-    try {
-      await setDoc(doc(db, "siteContent", "hero"), values.hero);
-      await setDoc(doc(db, "siteContent", "about"), {
+
+    const operations = [
+      { ref: heroRef, data: values.hero, name: 'hero' },
+      { ref: aboutRef, data: {
           bio: values.about.bio,
           stats: values.about.stats,
           tools: values.about.tools,
           aboutImageUrl: values.about.aboutImageUrl || ""
-      });
-      await setDoc(doc(db, "siteContent", "theme"), { value: values.theme });
-      await setDoc(doc(db, "siteContent", "socials"), values.socials);
+      }, name: 'about' },
+      { ref: themeRef, data: { value: values.theme }, name: 'theme' },
+      { ref: socialsRef, data: values.socials, name: 'socials' },
+    ];
 
+    try {
+        for (const op of operations) {
+            if(op.ref) {
+                setDoc(op.ref, op.data, { merge: true }).catch(async (serverError) => {
+                    const permissionError = new FirestorePermissionError({
+                      path: op.ref!.path,
+                      operation: 'update',
+                      requestResourceData: op.data,
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                  });
+            }
+        }
       toast({
         title: "Content Updated",
         description: "Your website content has been saved successfully.",

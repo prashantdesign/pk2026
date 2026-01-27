@@ -1,12 +1,12 @@
 'use client';
 import React, { useEffect } from 'react';
-import { useAuth } from '@/hooks/use-auth';
+import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AdminSidebar from '@/components/admin/admin-sidebar';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading } = useUser();
   const router = useRouter();
 
   useEffect(() => {

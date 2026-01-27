@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from '@/components/auth-provider';
 import { ThemeProvider } from '@/components/theme-provider';
+import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseErrorListener } from '@/components/firebase-error-listener';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -20,12 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-body antialiased`}>
-        <AuthProvider>
+        <FirebaseClientProvider>
           <ThemeProvider>
             {children}
             <Toaster />
+            <FirebaseErrorListener />
           </ThemeProvider>
-        </AuthProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

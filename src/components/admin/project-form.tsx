@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { revalidatePath } from 'next/cache';
 
-import { saveProject } from '@/app/admin/actions';
 import { generateProjectDescription } from '@/ai/flows/generate-project-descriptions';
 
 import { Button } from '@/components/ui/button';
@@ -17,8 +19,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Wand2, X } from 'lucide-react';
-import Image from 'next/image';
 import type { Project } from '@/types';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -38,8 +41,37 @@ const formSchema = z.object({
 
 type ProjectFormValues = z.infer<typeof formSchema>;
 
+async function saveProject(firestore: any, projectId: string | undefined, data: any) {
+    if (projectId) {
+      // Update existing project
+      const projectRef = doc(firestore, 'projects', projectId);
+      setDoc(projectRef, data, { merge: true }).catch(async (serverError: any) => {
+          const permissionError = new FirestorePermissionError({
+            path: projectRef.path,
+            operation: 'update',
+            requestResourceData: data,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
+
+    } else {
+      // Create new project
+      const collRef = collection(firestore, 'projects')
+      addDoc(collRef, data).catch(async (serverError: any) => {
+          const permissionError = new FirestorePermissionError({
+            path: collRef.path,
+            operation: 'create',
+            requestResourceData: data,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
+    }
+}
+
+
 export default function ProjectForm({ project }: { project?: Project }) {
   const router = useRouter();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -113,9 +145,13 @@ export default function ProjectForm({ project }: { project?: Project }) {
   }
 
   const onSubmit = async (data: ProjectFormValues) => {
+    if(!firestore) {
+        toast({ variant: "destructive", title: "Firestore not available" });
+        return;
+    }
     setIsSaving(true);
     try {
-      await saveProject(project?.id, data);
+      await saveProject(firestore, project?.id, data);
       toast({
         title: project ? "Project Updated" : "Project Created",
         description: "Your project has been saved successfully.",

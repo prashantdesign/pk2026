@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // USERS
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
+    }
+    
+    // PROJECTS: Public read, only authenticated users can write
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // MESSAGES: Only authenticated users can read, anyone can create
+    match /messages/{messageId} {
+      allow read, delete: if isSignedIn();
+      allow create: if true;
+      allow update(diff): if isSignedIn() && diff.only(['read']);
+    }
+
+    // SITE CONTENT: Public read, only authenticated users can write
+    match /siteContent/{contentId} {
+       allow read: if true;
+       allow write: if isSignedIn();
+    }
+  }
+}

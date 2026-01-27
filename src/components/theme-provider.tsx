@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useState, useEffect, createContext, useContext, ReactNode, useMemo } from 'react';
+import { doc } from 'firebase/firestore';
+import { useFirestore, useDoc } from '@/firebase';
 
 type Theme = 'light' | 'dark';
 
@@ -14,24 +14,17 @@ const ThemeProviderContext = createContext<{ theme: Theme, setTheme: (theme: The
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>('dark'); // Default to dark
-  const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
+  
+  const themeRef = useMemo(() => firestore ? doc(firestore, 'siteContent', 'theme') : null, [firestore]);
+  const { data: themeData, loading } = useDoc(themeRef);
 
   useEffect(() => {
-    const unsub = onSnapshot(doc(db, "siteContent", "theme"), (doc) => {
-      if (doc.exists()) {
-        const newTheme = doc.data().value as Theme;
-        setTheme(newTheme);
-      } else {
-        // If no theme is set in Firestore, default to dark
-        setTheme('dark');
-      }
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching theme:", error);
-      setLoading(false); // still stop loading on error, will use default theme
-    });
-    return () => unsub();
-  }, []);
+    if (themeData) {
+      const newTheme = (themeData as any).value as Theme;
+      setTheme(newTheme);
+    }
+  }, [themeData]);
 
   useEffect(() => {
     const root = window.document.documentElement;

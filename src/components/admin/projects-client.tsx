@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import React from 'react';
+import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
+import { useFirestore, useCollection } from '@/firebase';
 import type { Project } from '@/types';
 import {
   Table,
@@ -27,30 +27,17 @@ import { Card, CardContent } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 
 export default function ProjectsClient() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
+  const firestore = useFirestore();
 
-  useEffect(() => {
-    const q = query(collection(db, 'projects'), orderBy('order', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const projectsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
-      setProjects(projectsData);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching projects:", error);
-      toast({ variant: "destructive", title: "Failed to load projects." });
-      setLoading(false);
-    });
+  const projectsQuery = firestore ? query(collection(firestore, 'projects'), orderBy('order', 'asc')) : null;
+  const { data: projects, loading } = useCollection<Project>(projectsQuery);
 
-    return () => unsubscribe();
-  }, [toast]);
-  
   const handleDelete = async (id: string) => {
-      if (!window.confirm("Are you sure you want to delete this project?")) return;
+      if (!firestore || !window.confirm("Are you sure you want to delete this project?")) return;
       try {
-          await deleteDoc(doc(db, "projects", id));
+          await deleteDoc(doc(firestore, "projects", id));
           toast({ title: "Project deleted successfully." });
       } catch (error) {
           toast({ variant: "destructive", title: "Failed to delete project." });
@@ -76,7 +63,7 @@ export default function ProjectsClient() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {projects.length > 0 ? (
+                {projects && projects.length > 0 ? (
                     projects.map((project) => (
                         <TableRow key={project.id}>
                         <TableCell className="font-medium">{project.title}</TableCell>

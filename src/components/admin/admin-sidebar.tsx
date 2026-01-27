@@ -2,7 +2,7 @@
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { useAuth } from '@/firebase';
 import {
   Sidebar,
   SidebarContent,
@@ -26,8 +26,10 @@ const AdminSidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
 
   const handleLogout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       toast({

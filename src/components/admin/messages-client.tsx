@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import React from 'react';
+import { collection, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { useFirestore, useCollection } from '@/firebase';
 import type { ContactMessage } from '@/types';
 import { format } from 'date-fns';
 import {
@@ -27,26 +27,16 @@ import { Card, CardContent } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 
 export default function MessagesClient() {
-  const [messages, setMessages] = useState<ContactMessage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const firestore = useFirestore();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const messagesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ContactMessage[];
-      setMessages(messagesData);
-      setLoading(false);
-    }, (error) => {
-      toast({ variant: "destructive", title: "Failed to load messages." });
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, [toast]);
+  const messagesQuery = firestore ? query(collection(firestore, 'messages'), orderBy('createdAt', 'desc')) : null;
+  const { data: messages, loading } = useCollection<ContactMessage>(messagesQuery);
   
   const toggleReadStatus = async (id: string, currentStatus: boolean) => {
+    if (!firestore) return;
       try {
-          await updateDoc(doc(db, "messages", id), { read: !currentStatus });
+          await updateDoc(doc(firestore, "messages", id), { read: !currentStatus });
           toast({ title: `Message marked as ${!currentStatus ? 'read' : 'unread'}.` });
       } catch (error) {
           toast({ variant: "destructive", title: "Failed to update message status." });
@@ -54,9 +44,9 @@ export default function MessagesClient() {
   }
 
   const handleDelete = async (id: string) => {
-      if (!window.confirm("Are you sure you want to delete this message?")) return;
+      if (!firestore || !window.confirm("Are you sure you want to delete this message?")) return;
       try {
-          await deleteDoc(doc(db, "messages", id));
+          await deleteDoc(doc(firestore, "messages", id));
           toast({ title: "Message deleted successfully." });
       } catch (error) {
           toast({ variant: "destructive", title: "Failed to delete message." });
@@ -81,7 +71,7 @@ export default function MessagesClient() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {messages.length > 0 ? messages.map((message) => (
+            {messages && messages.length > 0 ? messages.map((message) => (
               <TableRow key={message.id} className={!message.read ? 'font-bold' : ''}>
                 <TableCell>
                     <Badge variant={message.read ? 'secondary' : 'default'}>{message.read ? 'Read' : 'Unread'}</Badge>
