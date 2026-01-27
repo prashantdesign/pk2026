@@ -1,6 +1,6 @@
 "use server";
 
-import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
+import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { revalidatePath } from 'next/cache';
 
@@ -20,5 +20,19 @@ export async function saveProject(projectId: string | undefined, data: any) {
   } catch (error) {
     console.error("Error saving project:", error);
     return { success: false, error: "Failed to save project." };
+  }
+}
+
+export async function saveMessage(data: { name: string; email: string; message: string; }) {
+  try {
+    await addDoc(collection(db, 'messages'), {
+      ...data,
+      createdAt: serverTimestamp(),
+      read: false,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving message:", error);
+    return { success: false, error: "Failed to send message." };
   }
 }

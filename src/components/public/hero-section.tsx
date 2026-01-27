@@ -1,65 +1,49 @@
-"use client";
-
-import React, { useEffect, useState } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
+import React from 'react';
+import { Button } from '../ui/button';
+import Link from 'next/link';
+import { ArrowDown } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { SiteContent } from '@/types';
 
-const HeroSection = () => {
-  const [content, setContent] = useState<SiteContent['hero'] | null>(null);
-  const [loading, setLoading] = useState(true);
+async function getHeroContent() {
+    const docRef = doc(db, 'siteContent', 'hero');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as SiteContent['hero'];
+    }
+    return {
+        title: 'Creative Designer & Developer',
+        subtitle: 'I design and code beautifully simple things, and I love what I do.',
+        ctaText: 'View My Work',
+        ctaLink: '#work',
+        showCta: true,
+    }
+}
 
-  useEffect(() => {
-    const unsub = onSnapshot(doc(db, "siteContent", "hero"), (doc) => {
-      if (doc.exists()) {
-        setContent(doc.data() as SiteContent['hero']);
-      } else {
-        // Set default content if nothing in DB
-        setContent({
-          title: "Creative Graphic & UI Designer",
-          subtitle: "Crafting beautiful and intuitive digital experiences. Turning ideas into stunning visuals and seamless user interfaces.",
-          ctaText: "View My Work",
-          ctaLink: "#work",
-          showCta: true,
-        });
-      }
-      setLoading(false);
-    });
-
-    return () => unsub();
-  }, []);
-
-  if (loading) {
-    return (
-      <section className="py-24 sm:py-32 md:py-40">
-        <div className="container text-center">
-          <Skeleton className="h-16 md:h-20 w-3/4 mx-auto mb-6" />
-          <Skeleton className="h-6 md:h-8 w-full max-w-2xl mx-auto mb-10" />
-          <Skeleton className="h-12 w-40 mx-auto" />
-        </div>
-      </section>
-    );
-  }
-
+export default async function HeroSection() {
+    const content = await getHeroContent();
   return (
-    <section className="py-24 sm:py-32 md:py-40">
-      <div className="container text-center">
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-          {content?.title}
+    <section id="hero" className="relative flex h-screen min-h-[700px] w-full flex-col items-center justify-center text-center">
+      <div className="absolute inset-0 bg-grid-pattern bg-center [mask-image:linear-gradient(to_bottom,white_10%,transparent_90%)]"></div>
+      <div className="container relative mx-auto px-4">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
+          {content.title}
         </h1>
-        <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-10">
-          {content?.subtitle}
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-foreground/80 md:text-xl">
+          {content.subtitle}
         </p>
-        {content?.showCta && (
-          <Button asChild size="lg">
-            <a href={content.ctaLink}>{content.ctaText}</a>
-          </Button>
+        {content.showCta && (
+            <div className="mt-10">
+            <Button asChild size="lg">
+                <Link href={content.ctaLink}>
+                    {content.ctaText}
+                    <ArrowDown className="ml-2 h-5 w-5 animate-bounce" />
+                </Link>
+            </Button>
+            </div>
         )}
       </div>
     </section>
   );
-};
-
-export default HeroSection;
+}

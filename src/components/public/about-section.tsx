@@ -1,86 +1,78 @@
-"use client";
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Icons } from '@/components/icons';
 import type { SiteContent } from '@/types';
+import { Card, CardContent } from '../ui/card';
+import { Briefcase, Users, Award } from 'lucide-react';
+import { Icons } from '../icons';
 
-type AboutContent = SiteContent['about'];
+async function getAboutContent() {
+    const docRef = doc(db, 'siteContent', 'about');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as SiteContent['about'];
+    }
+    return {
+        bio: 'I am a passionate designer with a love for creating intuitive and beautiful user experiences. With a background in both graphic design and front-end development, I bridge the gap between aesthetics and functionality.',
+        stats: {
+            projects: 50,
+            experience: 5,
+            clients: 20
+        },
+        tools: ['Figma', 'Photoshop', 'Illustrator', 'Spline']
+    }
+}
 
-const StatCard = ({ value, label, loading }: { value: number; label: string, loading: boolean }) => (
-    <div className="bg-card p-6 rounded-lg text-center shadow-sm">
-        {loading ? <Skeleton className="h-8 w-16 mx-auto mb-2" /> : <div className="text-4xl font-bold text-primary">{value}+</div>}
-        {loading ? <Skeleton className="h-4 w-24 mx-auto" /> : <p className="text-muted-foreground">{label}</p>}
-    </div>
-);
 
-export default function AboutSection() {
-    const [content, setContent] = useState<AboutContent | null>(null);
-    const [loading, setLoading] = useState(true);
+export default async function AboutSection() {
+    const content = await getAboutContent();
+    
+    const stats = [
+        { icon: <Briefcase/>, value: content.stats.projects, label: 'Projects Completed' },
+        { icon: <Award/>, value: content.stats.experience, label: 'Years of Experience' },
+        { icon: <Users/>, value: content.stats.clients, label: 'Happy Clients' },
+    ]
 
-    useEffect(() => {
-        const fetchContent = async () => {
-            try {
-                const docRef = doc(db, 'siteContent', 'about');
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setContent(docSnap.data() as AboutContent);
-                }
-            } catch (error) {
-                console.error("Failed to fetch about content", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchContent();
-    }, []);
-
-    return (
-        <section id="about" className="py-20 md:py-32 bg-secondary/50">
-            <div className="container mx-auto px-4">
-                <div className="max-w-4xl mx-auto">
-                    <div className="grid md:grid-cols-2 gap-16 items-center">
-                        <div>
-                            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">About Me</h2>
-                            {loading ? (
-                                <div className="space-y-3">
-                                    <Skeleton className="h-4 w-full" />
-                                    <Skeleton className="h-4 w-full" />
-                                    <Skeleton className="h-4 w-5/6" />
-                                </div>
-                            ) : (
-                                <p className="text-muted-foreground leading-relaxed">
-                                    {content?.bio}
-                                </p>
-                            )}
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                            <StatCard loading={loading} value={content?.stats?.projects ?? 0} label="Projects" />
-                            <StatCard loading={loading} value={content?.stats?.experience ?? 0} label="Years" />
-                            <StatCard loading={loading} value={content?.stats?.clients ?? 0} label="Clients" />
-                        </div>
-                    </div>
-
-                    <div className="mt-20 text-center">
-                        <h3 className="text-2xl font-bold mb-8 text-foreground">My Toolkit</h3>
-                        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
-                            {loading ? (
-                                Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 w-16" />)
-                            ) : (
-                                (content?.tools || []).map((tool) => (
-                                    <div key={tool} className="flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                                        <Icons name={tool} className="w-12 h-12" />
-                                        <span className="text-sm font-medium">{tool}</span>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
+  return (
+    <section id="about" className="py-20 md:py-32">
+      <div className="container mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">About Me</h2>
+                <p className="mt-4 text-lg text-foreground/80">
+                    {content.bio}
+                </p>
+                <div className="mt-8 grid grid-cols-3 gap-4">
+                    {stats.map((stat, index) => (
+                        <Card key={index} className="bg-secondary/50 border-secondary">
+                            <CardContent className="p-4 text-center">
+                                <div className="text-primary mx-auto h-8 w-8 mb-2">{stat.icon}</div>
+                                <p className="text-3xl font-bold">{stat.value}+</p>
+                                <p className="text-sm text-muted-foreground">{stat.label}</p>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
             </div>
-        </section>
-    );
+            <div>
+                <h3 className="text-2xl font-bold tracking-tight text-center md:text-left mb-6">My Toolkit</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                    {content.tools && content.tools.length > 0 ? (
+                        content.tools.map((tool) => (
+                            <div key={tool} className="flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-300">
+                                <div className="w-16 h-16 bg-secondary rounded-lg flex items-center justify-center">
+                                    <Icons name={tool} className="w-8 h-8" />
+                                </div>
+                                <span className="text-sm font-medium">{tool}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No tools listed.</p>
+                    )}
+                </div>
+            </div>
+        </div>
+      </div>
+    </section>
+  );
 }
