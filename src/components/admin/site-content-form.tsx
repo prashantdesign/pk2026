@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '../ui/skeleton';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
 const heroSchema = z.object({
   title: z.string().min(1, "Title is required."),
@@ -38,6 +39,7 @@ const aboutSchema = z.object({
 const formSchema = z.object({
   hero: heroSchema,
   about: aboutSchema,
+  theme: z.enum(['light', 'dark']).default('dark'),
 });
 
 export default function SiteContentForm() {
@@ -51,6 +53,7 @@ export default function SiteContentForm() {
     defaultValues: {
       hero: { title: "", subtitle: "", ctaText: "", ctaLink: "", showCta: true },
       about: { bio: "", aboutImageUrl: "", stats: { projects: 0, experience: 0 }, tools: [] },
+      theme: 'dark',
     },
   });
 
@@ -59,6 +62,7 @@ export default function SiteContentForm() {
       try {
         const heroDoc = await getDoc(doc(db, "siteContent", "hero"));
         const aboutDoc = await getDoc(doc(db, "siteContent", "about"));
+        const themeDoc = await getDoc(doc(db, "siteContent", "theme"));
 
         if (heroDoc.exists()) {
           form.setValue('hero', heroDoc.data() as z.infer<typeof heroSchema>);
@@ -71,6 +75,9 @@ export default function SiteContentForm() {
           if (aboutData.aboutImageUrl) {
             form.setValue('about.aboutImageUrl', aboutData.aboutImageUrl);
           }
+        }
+        if (themeDoc.exists()) {
+          form.setValue('theme', themeDoc.data().value as 'light' | 'dark');
         }
       } catch (error) {
         toast({ variant: "destructive", title: "Error fetching content." });
@@ -111,6 +118,7 @@ export default function SiteContentForm() {
           tools: values.about.tools,
           aboutImageUrl: values.about.aboutImageUrl || ""
       });
+      await setDoc(doc(db, "siteContent", "theme"), { value: values.theme });
 
       toast({
         title: "Content Updated",
@@ -134,7 +142,7 @@ export default function SiteContentForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Accordion type="multiple" defaultValue={['hero', 'about']} className="w-full">
+        <Accordion type="multiple" defaultValue={['hero', 'about', 'theme']} className="w-full">
           <AccordionItem value="hero">
             <AccordionTrigger className="text-xl font-semibold">Hero Section</AccordionTrigger>
             <AccordionContent className="pt-4 space-y-4">
@@ -184,6 +192,41 @@ export default function SiteContentForm() {
               <FormField control={form.control} name="about.tools" render={({ field }) => (
                 <FormItem><FormLabel>Toolkit</FormLabel><FormControl><Input placeholder="Figma, Photoshop, Illustrator" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="theme">
+            <AccordionTrigger className="text-xl font-semibold">Site Theme</AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              <FormField
+                control={form.control}
+                name="theme"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Choose a theme for your public website</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-1"
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="light" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Light</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="dark" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Dark</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
