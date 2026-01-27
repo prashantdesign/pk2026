@@ -2,114 +2,82 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { saveMessage } from '@/app/admin/actions';
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
+import { saveMessage } from '@/app/admin/actions';
 import { Loader2 } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  message: z.string().min(10, { message: "Message must be at least 10 characters." }),
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  message: z.string().min(10, { message: 'Message must be at least 10 characters.' }),
 });
 
-export default function ContactSection() {
-    const { toast } = useToast();
-    const [isLoading, setIsLoading] = useState(false);
+const ContactSection = () => {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            name: "",
-            email: "",
-            message: "",
-        },
-    });
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      message: '',
+    },
+  });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
-        setIsLoading(true);
-        const result = await saveMessage(values);
-        if (result.success) {
-            toast({
-                title: "Message Sent!",
-                description: "Thanks for reaching out. I'll get back to you soon.",
-            });
-            form.reset();
-        } else {
-            toast({
-                variant: "destructive",
-                title: "Uh oh! Something went wrong.",
-                description: result.error || "There was a problem sending your message.",
-            });
-        }
-        setIsLoading(false);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    const result = await saveMessage(values);
+    if (result.success) {
+      toast({
+        title: 'Message Sent!',
+        description: "Thanks for reaching out. I'll get back to you soon.",
+      });
+      form.reset();
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: result.error || 'There was a problem sending your message.',
+      });
     }
+    setIsLoading(false);
+  };
 
   return (
-    <section id="contact" className="py-20 md:py-32">
-        <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Get In Touch</h2>
-                <p className="mt-4 text-lg text-foreground/80 max-w-2xl mx-auto">
-                    Have a project in mind or just want to say hello? Drop me a line.
-                </p>
-            </div>
-            <div className="max-w-xl mx-auto">
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Name</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Your Name" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Email</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="your@email.com" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="message"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Message</FormLabel>
-                                <FormControl>
-                                    <Textarea placeholder="Tell me about your project..." {...field} className="min-h-[150px]"/>
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {isLoading ? "Sending..." : "Send Message"}
-                        </Button>
+    <section id="contact" className="py-16 md:py-24 bg-muted/40">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="mx-auto max-w-xl">
+            <Card>
+                <CardHeader className="text-center">
+                    <CardTitle className="text-3xl font-bold tracking-tighter sm:text-4xl">Get In Touch</CardTitle>
+                    <CardDescription>Have a project in mind? I&apos;d love to hear from you.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <Input placeholder="Your Name" {...form.register('name')} />
+                      {form.formState.errors.name && <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>}
+                      <Input placeholder="Your Email" {...form.register('email')} />
+                      {form.formState.errors.email && <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>}
+                      <Textarea placeholder="Your Message" {...form.register('message')} rows={5} />
+                      {form.formState.errors.message && <p className="text-sm text-destructive">{form.formState.errors.message.message}</p>}
+                      <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        {isLoading ? 'Sending...' : 'Send Message'}
+                      </Button>
                     </form>
-                </Form>
-            </div>
+                </CardContent>
+            </Card>
         </div>
+      </div>
     </section>
   );
-}
+};
+
+export default ContactSection;

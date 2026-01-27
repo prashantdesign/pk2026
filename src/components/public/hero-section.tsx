@@ -1,32 +1,23 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { ArrowDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { SiteContent } from '@/types';
 
-interface HeroContent {
-  title: string;
-  subtitle: string;
-  ctaText: string;
-  ctaLink: string;
-  showCta: boolean;
-}
-
-export default function HeroSection() {
-  const [content, setContent] = useState<HeroContent | null>(null);
+const HeroSection = () => {
+  const [content, setContent] = useState<SiteContent['hero'] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchContent = async () => {
-      setLoading(true);
       try {
         const docRef = doc(db, 'siteContent', 'hero');
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setContent(docSnap.data() as HeroContent);
+          setContent(docSnap.data() as SiteContent['hero']);
         }
       } catch (error) {
         console.error("Error fetching hero content:", error);
@@ -34,51 +25,41 @@ export default function HeroSection() {
         setLoading(false);
       }
     };
-
     fetchContent();
   }, []);
 
   if (loading) {
     return (
-      <section id="home" className="w-full py-20 md:py-32 lg:py-40 bg-gradient-to-br from-background to-secondary/30">
-        <div className="container px-4 md:px-6 text-center">
-          <div className="flex flex-col items-center space-y-6">
-            <Skeleton className="h-14 w-3/4 md:h-16" />
-            <Skeleton className="h-6 w-full max-w-2xl" />
-            <Skeleton className="h-12 w-40" />
-          </div>
-        </div>
+      <section className="container mx-auto flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center text-center px-4 md:px-6">
+        <Skeleton className="h-12 w-3/4 mb-4" />
+        <Skeleton className="h-8 w-1/2 mb-8" />
+        <Skeleton className="h-12 w-40" />
       </section>
     );
   }
-  
-  const heroContent = content || {
-      title: "Showcasing Creative Excellence",
-      subtitle: "A digital portfolio for a creative Graphic, UI, and Brand Designer.",
-      ctaText: "View My Work",
-      ctaLink: "#work",
-      showCta: true,
-  };
+
+  if (!content) {
+    return null;
+  }
 
   return (
-    <section id="home" className="w-full py-20 md:py-32 lg:py-40 bg-gradient-to-br from-background to-secondary/30">
-      <div className="container px-4 md:px-6 text-center">
-        <div className="flex flex-col items-center space-y-6">
-          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl text-foreground">
-            {heroContent.title}
-          </h1>
-          <p className="max-w-[700px] text-muted-foreground md:text-xl">
-            {heroContent.subtitle}
-          </p>
-          {heroContent.showCta && heroContent.ctaText && heroContent.ctaLink && (
-            <Link href={heroContent.ctaLink} passHref>
-              <Button size="lg" className="mt-4">
-                {heroContent.ctaText}
-              </Button>
-            </Link>
-          )}
-        </div>
-      </div>
+    <section className="container mx-auto flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center text-center px-4 md:px-6">
+      <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
+        {content.title}
+      </h1>
+      <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl mt-4">
+        {content.subtitle}
+      </p>
+      {content.showCta && content.ctaText && content.ctaLink && (
+        <Button size="lg" asChild className="mt-8">
+          <a href={content.ctaLink}>
+            {content.ctaText}
+            <ArrowDown className="ml-2 h-4 w-4 animate-bounce" />
+          </a>
+        </Button>
+      )}
     </section>
   );
-}
+};
+
+export default HeroSection;
