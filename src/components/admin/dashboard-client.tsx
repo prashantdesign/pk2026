@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, subDays, startOfDay } from 'date-fns';
 import { Badge } from '../ui/badge';
+import { Briefcase, Mail, MailOpen } from 'lucide-react';
 
 export default function DashboardClient() {
   const firestore = useFirestore();
@@ -43,10 +44,12 @@ export default function DashboardClient() {
     }).reverse();
 
     messages.forEach(message => {
-      const messageDate = message.timestamp.toDate();
-      const dayEntry = last7Days.find(d => format(startOfDay(messageDate), 'MMM d') === d.date);
-      if (dayEntry) {
-        dayEntry.count++;
+      if (message.timestamp) {
+        const messageDate = message.timestamp.toDate();
+        const dayEntry = last7Days.find(d => format(startOfDay(messageDate), 'MMM d') === d.date);
+        if (dayEntry) {
+          dayEntry.count++;
+        }
       }
     });
 
@@ -71,15 +74,24 @@ export default function DashboardClient() {
     <div className="space-y-8">
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardHeader><CardTitle>Total Projects</CardTitle></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
+            <Briefcase className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
           <CardContent><p className="text-4xl font-bold">{totalProjects}</p></CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Total Messages</CardTitle></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
+            <Mail className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
           <CardContent><p className="text-4xl font-bold">{totalMessages}</p></CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Unread Messages</CardTitle></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Unread Messages</CardTitle>
+            <MailOpen className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
           <CardContent><p className="text-4xl font-bold">{unreadMessages}</p></CardContent>
         </Card>
       </div>
@@ -116,7 +128,7 @@ export default function DashboardClient() {
                 <TableRow key={msg.id}>
                   <TableCell>{msg.name}</TableCell>
                   <TableCell className="max-w-sm truncate">{msg.message}</TableCell>
-                  <TableCell>{format(msg.timestamp.toDate(), 'PP')}</TableCell>
+                  <TableCell>{msg.timestamp ? format(msg.timestamp.toDate(), 'PP') : 'N/A'}</TableCell>
                   <TableCell><Badge variant={msg.isRead ? 'secondary' : 'default'}>{msg.isRead ? 'Read' : 'Unread'}</Badge></TableCell>
                 </TableRow>
               )) : (

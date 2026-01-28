@@ -1,8 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Project } from '@/types';
+import type { Project, SiteContent } from '@/types';
+import { useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+
 import Header from '@/components/public/header';
 import HeroSection from '@/components/public/hero-section';
 import AboutSection from '@/components/public/about-section';
@@ -10,11 +13,16 @@ import PortfolioSection from '@/components/public/portfolio-section';
 import ContactSection from '@/components/public/contact-section';
 import Footer from '@/components/public/footer';
 import ProjectModal from '@/components/public/project-modal';
+import StatsSection from '@/components/public/stats-section';
 
 export default function Home() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
+  const firestore = useFirestore();
+
+  const siteContentRef = useMemo(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
+  const { data: siteContent, loading } = useDoc<SiteContent>(siteContentRef as any);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -41,13 +49,31 @@ export default function Home() {
     setSelectedProject(null);
   };
 
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+      </div>
+    );
+  }
+
+  if (siteContent?.isMaintenanceModeEnabled) {
+    return (
+      <div className="flex flex-col min-h-screen items-center justify-center text-center p-4">
+          <h1 className="text-4xl font-bold tracking-tight mb-4">Under Maintenance</h1>
+          <p className="text-muted-foreground">My portfolio is currently undergoing some updates. Please check back soon!</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className={`flex flex-col min-h-screen bg-background ${siteContent?.areAnimationsEnabled ? '' : 'no-animations'}`}>
       <Header />
       <main className="flex-grow">
         <HeroSection />
-        <AboutSection />
-        <PortfolioSection onProjectClick={handleProjectClick} />
+        {siteContent?.isAboutSectionVisible && <AboutSection />}
+        {siteContent?.isStatsSectionVisible && <StatsSection />}
+        {siteContent?.isPortfolioSectionVisible && <PortfolioSection onProjectClick={handleProjectClick} />}
         <ContactSection />
       </main>
       <Footer />

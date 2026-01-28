@@ -37,6 +37,12 @@ export interface SiteContent {
     instagram?: string;
     email?: string;
   };
+  theme?: 'light' | 'dark';
+  isMaintenanceModeEnabled?: boolean;
+  areAnimationsEnabled?: boolean;
+  isAboutSectionVisible?: boolean;
+  isStatsSectionVisible?: boolean;
+  isPortfolioSectionVisible?: boolean;
 }
 
 export interface ContactMessage {

@@ -39,9 +39,9 @@
           "type": "boolean",
           "description": "Determines if the stats section is visible."
         },
-        "isToolsSectionVisible": {
+        "isPortfolioSectionVisible": {
           "type": "boolean",
-          "description": "Determines if the tools section is visible."
+          "description": "Determines if the portfolio section is visible."
         },
         "siteName": {
           "type": "string",
