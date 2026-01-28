@@ -2,19 +2,18 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { doc } from 'firebase/firestore';
+import { useFirestore, useDoc, useUser } from '@/firebase';
 import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Linkedin, Twitter, Instagram } from 'lucide-react';
-import { useDoc, useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { Menu, X } from 'lucide-react';
+import { useTheme } from '@/components/theme-provider';
 
-export default function Header() {
+const Header = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const firestore = useFirestore();
-  const socialsRef = useMemo(() => firestore ? doc(firestore, 'siteContent/socials') : null, [firestore]);
-  const { data: socials } = useDoc(socialsRef as any);
+  const { user } = useUser();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,62 +30,47 @@ export default function Header() {
   ];
 
   return (
-    <header
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        isScrolled ? 'bg-background/80 shadow-md backdrop-blur-sm' : 'bg-transparent'
-      }`}
-    >
-      <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-6">
-        <Link href="/">
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled || isOpen ? (theme === 'dark' ? 'bg-background/80 backdrop-blur-sm' : 'bg-background/80 backdrop-blur-sm') : 'bg-transparent'}`}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-20 items-center justify-between">
           <Logo />
-        </Link>
-        <nav className="hidden items-center gap-6 md:flex">
-          {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <nav className="hidden md:flex md:items-center md:gap-8">
+            {navLinks.map(link => (
+              <Link key={link.href} href={link.href} className="text-sm font-medium hover:text-primary transition-colors">
                 {link.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center gap-2">
-                {socials?.linkedin && <a href={socials.linkedin} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="icon"><Linkedin className="h-4 w-4" /></Button></a>}
-                {socials?.twitter && <a href={socials.twitter} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="icon"><Twitter className="h-4 w-4" /></Button></a>}
-                {socials?.instagram && <a href={socials.instagram} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="icon"><Instagram className="h-4 w-4" /></Button></a>}
-            </div>
-            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle Menu</span>
+              </Link>
+            ))}
+            {user && (
+              <Button asChild variant="ghost">
+                <Link href="/admin">Admin</Link>
               </Button>
-            </SheetTrigger>
-            <SheetContent side="right">
-              <div className="flex flex-col gap-6 p-6">
-                <Link href="/" onClick={() => setIsMenuOpen(false)}>
-                  <Logo />
-                </Link>
-                <nav className="flex flex-col gap-4">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="text-lg font-medium text-foreground transition-colors hover:text-primary"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </nav>
-                <div className="flex items-center gap-4 mt-4">
-                    {socials?.linkedin && <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)}><Button variant="ghost" size="icon"><Linkedin className="h-5 w-5" /></Button></a>}
-                    {socials?.twitter && <a href={socials.twitter} target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)}><Button variant="ghost" size="icon"><Twitter className="h-5 w-5" /></Button></a>}
-                    {socials?.instagram && <a href={socials.instagram} target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)}><Button variant="ghost" size="icon"><Instagram className="h-5 w-5" /></Button></a>}
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+            )}
+          </nav>
+          <div className="md:hidden">
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
         </div>
       </div>
+      {isOpen && (
+        <div className="md:hidden bg-background/95 backdrop-blur-sm">
+          <nav className="flex flex-col items-center gap-4 py-8">
+            {navLinks.map(link => (
+              <Link key={link.href} href={link.href} onClick={() => setIsOpen(false)} className="text-lg font-medium hover:text-primary transition-colors">
+                {link.label}
+              </Link>
+            ))}
+             {user && (
+              <Button asChild variant="ghost">
+                <Link href="/admin">Admin</Link>
+              </Button>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   );
-}
+};
+
+export default Header;

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useCollection } from '@/firebase';
 import type { Project } from '@/types';
@@ -33,8 +33,12 @@ export default function ProjectsClient() {
   const { toast } = useToast();
   const firestore = useFirestore();
 
-  const projectsQuery = firestore ? query(collection(firestore, 'projects'), orderBy('order', 'asc')) : null;
-  const { data: projects, loading } = useCollection<Project>(projectsQuery as any);
+  const projectsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'projects'), orderBy('order', 'asc'));
+  }, [firestore]);
+
+  const { data: projects, loading } = useCollection<Project>(projectsQuery);
 
   const handleDelete = (id: string) => {
       if (!firestore || !window.confirm("Are you sure you want to delete this project?")) return;

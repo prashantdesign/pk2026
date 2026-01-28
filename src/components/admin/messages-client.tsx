@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { collection, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useCollection } from '@/firebase';
 import type { ContactMessage } from '@/types';
@@ -32,8 +32,12 @@ export default function MessagesClient() {
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const messagesQuery = firestore ? query(collection(firestore, 'contactMessages'), orderBy('timestamp', 'desc')) : null;
-  const { data: messages, isLoading: loading } = useCollection<ContactMessage>(messagesQuery as any);
+  const messagesQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'contactMessages'), orderBy('timestamp', 'desc'));
+  }, [firestore]);
+
+  const { data: messages, isLoading: loading } = useCollection<ContactMessage>(messagesQuery);
   
   const toggleReadStatus = (id: string, currentStatus: boolean) => {
     if (!firestore) return;

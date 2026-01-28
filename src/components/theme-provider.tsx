@@ -3,6 +3,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode, useMemo } from 'react';
 import { doc } from 'firebase/firestore';
 import { useFirestore, useDoc } from '@/firebase';
+import type { SiteContent } from '@/types';
 
 type Theme = 'light' | 'dark';
 
@@ -16,15 +17,14 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>('dark'); // Default to dark
   const firestore = useFirestore();
   
-  const themeRef = useMemo(() => firestore ? doc(firestore, 'siteContent', 'theme') : null, [firestore]);
-  const { data: themeData, loading } = useDoc(themeRef);
+  const siteContentRef = useMemo(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
+  const { data: siteContent, loading } = useDoc<SiteContent & { theme?: Theme }>(siteContentRef);
 
   useEffect(() => {
-    if (themeData) {
-      const newTheme = (themeData as any).value as Theme;
-      setTheme(newTheme);
+    if (siteContent?.theme) {
+      setTheme(siteContent.theme);
     }
-  }, [themeData]);
+  }, [siteContent]);
 
   useEffect(() => {
     const root = window.document.documentElement;
