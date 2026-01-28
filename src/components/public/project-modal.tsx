@@ -1,90 +1,93 @@
 'use client';
-
 import React from 'react';
 import Image from 'next/image';
-import type { Project } from '@/types';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '../ui/separator';
+import type { Project } from '@/types';
+import { Icons } from '../icons';
 
-type ProjectModalProps = {
-  project: Project;
+interface ProjectModalProps {
+  project: Project | null;
   isOpen: boolean;
   onClose: () => void;
-};
+}
 
-const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
+export default function ProjectModal({ project, isOpen, onClose }: ProjectModalProps) {
   if (!project) return null;
 
-  const images = [project.imageUrl, ...(project.projectImages || [])];
-  
+  const allImages = [project.imageUrl, ...project.projectImages].filter(Boolean);
+  const tools = project.toolsUsed?.split(',').map(tool => tool.trim().toLowerCase()) || [];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[90vh]">
-        <ScrollArea className="h-full pr-6">
-          <DialogHeader className="mb-6">
-            <DialogTitle className="text-3xl font-bold">{project.title}</DialogTitle>
-            <DialogDescription className="text-md text-muted-foreground">
-              {project.description}
-            </DialogDescription>
-             <div className="flex flex-wrap gap-2 pt-2">
-                {project.toolsUsed?.split(',').map(tool => (
-                    <Badge key={tool} variant="secondary">{tool.trim()}</Badge>
-                ))}
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+        <div className="grid md:grid-cols-2 h-full">
+            <div className="relative h-full hidden md:block">
+                <Carousel className="w-full h-full">
+                <CarouselContent className="h-full">
+                    {allImages.map((img, index) => (
+                    <CarouselItem key={index} className="h-full">
+                        <div className="relative w-full h-full">
+                        <Image
+                            src={img}
+                            alt={`${project.title} image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                        />
+                        </div>
+                    </CarouselItem>
+                    ))}
+                </CarouselContent>
+                {allImages.length > 1 && (
+                    <>
+                        <CarouselPrevious className="left-4" />
+                        <CarouselNext className="right-4" />
+                    </>
+                )}
+                </Carousel>
             </div>
-          </DialogHeader>
-          
-          <Carousel className="w-full mb-8">
-            <CarouselContent>
-              {images.map((img, index) => (
-                <CarouselItem key={index}>
-                  <div className="relative aspect-video w-full rounded-lg overflow-hidden">
-                    <Image src={img} alt={`${project.title} - image ${index + 1}`} fill className="object-cover" />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
-
-          <div className="space-y-8">
-            {project.problem && (
-              <div>
-                <h3 className="text-2xl font-semibold mb-2">The Problem</h3>
-                <p className="text-muted-foreground whitespace-pre-wrap">{project.problem}</p>
-              </div>
-            )}
-
-            {project.solution && (
-              <div>
-                <h3 className="text-2xl font-semibold mb-2">The Solution</h3>
-                <p className="text-muted-foreground whitespace-pre-wrap">{project.solution}</p>
-              </div>
-            )}
-            
-            {project.outcome && (
-                 <>
-                    <Separator />
+            <div className="flex flex-col h-full">
+                <DialogHeader className="p-6 pb-4 flex-shrink-0">
+                    <DialogTitle className="text-2xl">{project.title}</DialogTitle>
+                    <DialogDescription>{project.description}</DialogDescription>
+                </DialogHeader>
+                <div className="flex-grow overflow-y-auto px-6 pb-6 space-y-6">
+                    {project.problem && (
                     <div>
-                        <h3 className="text-2xl font-semibold mb-2">Outcome</h3>
-                        <p className="text-muted-foreground whitespace-pre-wrap">{project.outcome}</p>
+                        <h4 className="font-semibold mb-2">The Problem</h4>
+                        <p className="text-sm text-muted-foreground">{project.problem}</p>
                     </div>
-                </>
-            )}
-          </div>
-        </ScrollArea>
+                    )}
+                    {project.solution && (
+                    <div>
+                        <h4 className="font-semibold mb-2">The Solution</h4>
+                        <p className="text-sm text-muted-foreground">{project.solution}</p>
+                    </div>
+                    )}
+                    {project.outcome && (
+                    <div>
+                        <h4 className="font-semibold mb-2">Outcome</h4>
+                        <p className="text-sm text-muted-foreground">{project.outcome}</p>
+                    </div>
+                    )}
+                    {tools.length > 0 && (
+                        <div>
+                            <h4 className="font-semibold mb-2">Tools Used</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {tools.map(tool => (
+                                    <Badge key={tool} variant="secondary" className="flex items-center gap-2 capitalize py-1 px-3">
+                                        <Icons name={tool} className="w-4 h-4" />
+                                        {tool}
+                                    </Badge>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
-};
-
-export default ProjectModal;
+}

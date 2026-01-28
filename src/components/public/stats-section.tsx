@@ -1,31 +1,28 @@
+'use client';
 import React from 'react';
+import { Award, Briefcase, Smile, Star } from 'lucide-react';
 
 const stats = [
-    { value: '10+', label: 'Years Experience' },
-    { value: '50+', label: 'Projects Completed' },
-    { value: '30+', label: 'Happy Clients' },
-    { value: '3', label: 'Design Awards' },
+  { value: '5+', label: 'Years of Experience', icon: Star },
+  { value: '100+', label: 'Projects Completed', icon: Briefcase },
+  { value: '50+', label: 'Happy Clients', icon: Smile },
+  { value: '3', label: 'Design Awards', icon: Award },
 ];
 
-const StatsSection = () => {
+export default function StatsSection() {
   return (
-    <section id="stats" className="py-20 sm:py-28 bg-muted/30">
+    <section className="py-20 bg-secondary/20">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
-            <div key={index} className="text-center">
-              <h3 className="text-4xl md:text-5xl font-bold text-primary mb-2">
-                {stat.value}
-              </h3>
-              <p className="text-sm md:text-base text-muted-foreground">
-                {stat.label}
-              </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          {stats.map((stat) => (
+            <div key={stat.label} className="flex flex-col items-center">
+              <stat.icon className="w-10 h-10 text-primary mb-2"/>
+              <h3 className="text-4xl font-bold">{stat.value}</h3>
+              <p className="text-muted-foreground mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
       </div>
     </section>
   );
-};
-
-export default StatsSection;
+}

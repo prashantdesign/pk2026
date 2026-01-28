@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Project, SiteContent } from '@/types';
-import { useFirestore, useDoc } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
 import Header from '@/components/public/header';
@@ -21,8 +21,8 @@ export default function Home() {
   const router = useRouter();
   const firestore = useFirestore();
 
-  const siteContentRef = useMemo(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
-  const { data: siteContent, loading } = useDoc<SiteContent>(siteContentRef as any);
+  const siteContentRef = useMemoFirebase(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
+  const { data: siteContent, loading } = useDoc<SiteContent>(siteContentRef);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -68,15 +68,15 @@ export default function Home() {
 
   return (
     <div className={`flex flex-col min-h-screen bg-background ${siteContent?.areAnimationsEnabled ? '' : 'no-animations'}`}>
-      <Header />
+      <Header siteName={siteContent?.siteName} />
       <main className="flex-grow">
-        <HeroSection />
-        {siteContent?.isAboutSectionVisible && <AboutSection />}
+        <HeroSection content={siteContent} />
+        {siteContent?.isAboutSectionVisible && <AboutSection content={siteContent} />}
         {siteContent?.isStatsSectionVisible && <StatsSection />}
         {siteContent?.isPortfolioSectionVisible && <PortfolioSection onProjectClick={handleProjectClick} />}
         <ContactSection />
       </main>
-      <Footer />
+      <Footer content={siteContent} />
       {selectedProject && (
         <ProjectModal
           project={selectedProject}
