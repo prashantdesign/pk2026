@@ -1,6 +1,7 @@
 import React from 'react';
 import SettingsForm from '@/components/admin/settings-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import DemoDataControls from '@/components/admin/demo-data-controls';
 
 export default function SettingsPage() {
   return (
