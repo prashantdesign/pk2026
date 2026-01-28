@@ -10,14 +10,12 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 
-import { generateProjectDescription } from '@/ai/flows/generate-project-descriptions';
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Wand2, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { Project } from '@/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -68,7 +66,6 @@ export default function ProjectForm({ project }: { project?: Project }) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   const defaultValues: Partial<ProjectFormValues> = {
@@ -94,25 +91,6 @@ export default function ProjectForm({ project }: { project?: Project }) {
     name: "projectImages",
   });
 
-  const handleGenerateDescription = async () => {
-    setIsGenerating(true);
-    try {
-      const { title, categoryId, toolsUsed } = form.getValues();
-      const generated = await generateProjectDescription({
-        projectTitle: title,
-        category: categoryId,
-        tools: toolsUsed || '',
-      });
-      form.setValue('description', generated.shortCaption);
-      form.setValue('solution', generated.longCaseStudy);
-      toast({ title: "AI descriptions generated!" });
-    } catch (error) {
-      toast({ variant: "destructive", title: "AI Generation Failed" });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-  
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'imageUrl' | 'projectImages') => {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -165,11 +143,6 @@ export default function ProjectForm({ project }: { project?: Project }) {
             <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem><FormLabel>Short Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
             )} />
-            <div className="flex justify-end">
-              <Button type="button" variant="outline" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
-                <Wand2 className="mr-2 h-4 w-4" /> {isGenerating ? "Generating..." : "Generate with AI"}
-              </Button>
-            </div>
           </div>
           <div className="space-y-6">
              <FormField control={form.control} name="categoryId" render={({ field }) => (
