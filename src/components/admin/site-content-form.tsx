@@ -20,6 +20,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import type { SiteContent } from '@/types';
 import { Trash2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import Image from 'next/image';
 
 const formSchema = z.object({
   siteName: z.string().optional(),
@@ -109,7 +111,7 @@ export default function SiteContentForm() {
       try {
           const snapshot = await uploadBytes(storageRef, file);
           const downloadURL = await getDownloadURL(snapshot.ref);
-          form.setValue('aboutImageUrl', downloadURL);
+          form.setValue('aboutImageUrl', downloadURL, { shouldValidate: true });
           toast({title: "Image uploaded successfully"});
       } catch (error) {
           toast({variant: "destructive", title: "Image upload failed"});
@@ -165,6 +167,8 @@ export default function SiteContentForm() {
         });
   };
 
+  const aboutImageUrl = form.watch('aboutImageUrl');
+
   if (isFetching) {
     return <Skeleton className="h-96 w-full" />
   }
@@ -199,12 +203,47 @@ export default function SiteContentForm() {
               <FormField control={form.control} name="aboutText" render={({ field }) => (
                 <FormItem><FormLabel>Biography</FormLabel><FormControl><Textarea className="min-h-[120px]" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-               <FormField control={form.control} name="aboutImageUrl" render={({ field }) => (
-                <FormItem><FormLabel>Your Picture URL</FormLabel><FormControl><Input placeholder="https://..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <div>
-                <FormLabel>Or Upload Your Picture</FormLabel>
-                <Input type="file" onChange={handleImageUpload} disabled={isUploading}/>
+              <div className="space-y-2">
+                <FormLabel>Your Picture</FormLabel>
+                <Tabs defaultValue="url" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="url">URL</TabsTrigger>
+                    <TabsTrigger value="upload">Upload</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="url" className="pt-4">
+                    <FormField
+                      control={form.control}
+                      name="aboutImageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Image URL</FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://..." {...field} value={field.value ?? ''} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                  <TabsContent value="upload" className="pt-4">
+                    <FormItem>
+                      <FormLabel>Upload an image file</FormLabel>
+                      <FormControl>
+                        <Input type="file" onChange={handleImageUpload} disabled={isUploading} />
+                      </FormControl>
+                      {isUploading && <p className="text-sm text-muted-foreground mt-2">Uploading...</p>}
+                      <FormMessage />
+                    </FormItem>
+                  </TabsContent>
+                </Tabs>
+                {aboutImageUrl && (
+                  <div className="mt-4">
+                    <FormLabel>Image Preview</FormLabel>
+                    <div className="mt-2 relative aspect-square w-48">
+                      <Image src={aboutImageUrl} alt="About Me preview" fill className="rounded-md object-cover" />
+                    </div>
+                  </div>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -302,7 +341,7 @@ export default function SiteContentForm() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-        <Button type="submit" disabled={isLoading}>{isLoading ? 'Saving...' : 'Save Content'}</Button>
+        <Button type="submit" disabled={isLoading || isUploading}>{isLoading ? 'Saving...' : 'Save Content'}</Button>
       </form>
     </Form>
   );

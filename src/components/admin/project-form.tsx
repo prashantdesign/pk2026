@@ -19,6 +19,8 @@ import { X } from 'lucide-react';
 import type { Project } from '@/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Image from 'next/image';
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -104,7 +106,7 @@ export default function ProjectForm({ project }: { project?: Project }) {
           const downloadURL = await getDownloadURL(snapshot.ref);
           
           if (fieldName === 'imageUrl') {
-              form.setValue('imageUrl', downloadURL);
+              form.setValue('imageUrl', downloadURL, { shouldValidate: true });
           } else {
               append(downloadURL);
           }
@@ -131,6 +133,9 @@ export default function ProjectForm({ project }: { project?: Project }) {
     router.refresh();
     setIsSaving(false);
   };
+  
+  const mainImageUrl = form.watch('imageUrl');
+  const additionalImages = form.watch('projectImages');
 
   return (
     <Form {...form}>
@@ -160,26 +165,86 @@ export default function ProjectForm({ project }: { project?: Project }) {
         <Accordion type="multiple" defaultValue={['images', 'caseStudy']} className="w-full">
           <AccordionItem value="images">
             <AccordionTrigger className="text-xl font-semibold">Project Images</AccordionTrigger>
-            <AccordionContent className="pt-4 space-y-4">
-                <FormField control={form.control} name="imageUrl" render={({ field }) => (
-                    <FormItem><FormLabel>Main Image URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <div>
-                    <FormLabel>Or Upload Main Image</FormLabel>
-                    <Input type="file" onChange={(e) => handleImageUpload(e, 'imageUrl')} disabled={isUploading}/>
-                </div>
-
-                <FormLabel>Additional Images</FormLabel>
-                 {fields.map((field, index) => (
-                    <div key={field.id} className="flex items-center gap-2">
-                        <Input {...form.register(`projectImages.${index}`)} />
-                        <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}><X className="h-4 w-4" /></Button>
+            <AccordionContent className="pt-4 space-y-6">
+              <div className="space-y-2 p-4 border rounded-lg">
+                <FormLabel className="font-semibold">Main Image</FormLabel>
+                <Tabs defaultValue="url" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="url">URL</TabsTrigger>
+                    <TabsTrigger value="upload">Upload</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="url" className="pt-4">
+                    <FormField control={form.control} name="imageUrl" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Image URL</FormLabel>
+                        <FormControl><Input placeholder="https://..." {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </TabsContent>
+                  <TabsContent value="upload" className="pt-4">
+                    <FormItem>
+                      <FormLabel>Upload an image file</FormLabel>
+                      <FormControl>
+                        <Input type="file" onChange={(e) => handleImageUpload(e, 'imageUrl')} disabled={isUploading} />
+                      </FormControl>
+                      {isUploading && <p className="text-sm text-muted-foreground mt-2">Uploading...</p>}
+                      <FormMessage />
+                    </FormItem>
+                  </TabsContent>
+                </Tabs>
+                {mainImageUrl && (
+                  <div className="mt-4">
+                    <FormLabel>Preview</FormLabel>
+                    <div className="mt-2 relative aspect-video w-full max-w-sm">
+                      <Image src={mainImageUrl} alt="Main image preview" fill className="rounded-md object-contain" />
                     </div>
-                 ))}
-                 <div>
-                    <FormLabel>Or Upload Additional Image</FormLabel>
-                    <Input type="file" onChange={(e) => handleImageUpload(e, 'projectImages')} disabled={isUploading}/>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4 p-4 border rounded-lg">
+                <FormLabel className="font-semibold">Additional Images</FormLabel>
+                <FormDescription>Add image URLs for the project carousel.</FormDescription>
+                {fields.map((field, index) => (
+                  <div key={field.id} className="p-2 border rounded-md">
+                    <div className="flex items-start gap-2">
+                      <FormField
+                        control={form.control}
+                        name={`projectImages.${index}`}
+                        render={({ field }) => (
+                          <FormItem className="flex-grow">
+                            <FormLabel>Image URL #{index + 1}</FormLabel>
+                            <FormControl><Input {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)} className="mt-8">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {additionalImages?.[index] && (
+                      <div className="mt-4">
+                        <FormLabel>Preview</FormLabel>
+                        <div className="mt-2 relative aspect-video w-full max-w-xs">
+                          <Image src={additionalImages[index]} alt={`Preview ${index + 1}`} fill className="rounded-md object-contain" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div className="flex items-center gap-4 pt-4">
+                  <Button type="button" variant="outline" size="sm" onClick={() => append("")}>
+                    Add by URL
+                  </Button>
+                  <div className="flex-grow">
+                    <FormLabel className="text-sm font-normal">Or upload to add</FormLabel>
+                    <Input type="file" onChange={(e) => handleImageUpload(e, 'projectImages')} disabled={isUploading} />
+                    {isUploading && <p className="text-sm text-muted-foreground mt-1">Uploading...</p>}
+                  </div>
                 </div>
+              </div>
             </AccordionContent>
           </AccordionItem>
           
@@ -199,7 +264,7 @@ export default function ProjectForm({ project }: { project?: Project }) {
           </AccordionItem>
         </Accordion>
 
-        <Button type="submit" disabled={isSaving}>
+        <Button type="submit" disabled={isSaving || isUploading}>
           {isSaving ? 'Saving...' : 'Save Project'}
         </Button>
       </form>

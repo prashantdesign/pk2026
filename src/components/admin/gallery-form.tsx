@@ -13,6 +13,7 @@ import { useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { GalleryImage } from '@/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -120,25 +121,49 @@ export default function GalleryForm({ image }: { image?: GalleryImage }) {
             <FormItem><FormLabel>Order</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
         )} />
 
-        <div className="space-y-4">
-            <FormField control={form.control} name="imageUrl" render={({ field }) => (
-                <FormItem><FormLabel>Image URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <div>
-                <FormLabel>Or Upload Image</FormLabel>
-                <Input type="file" onChange={handleImageUpload} disabled={isUploading}/>
+        <div className="space-y-2">
+          <FormLabel>Image</FormLabel>
+          <Tabs defaultValue="url" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="url">URL</TabsTrigger>
+              <TabsTrigger value="upload">Upload</TabsTrigger>
+            </TabsList>
+            <TabsContent value="url" className="pt-4">
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </TabsContent>
+            <TabsContent value="upload" className="pt-4">
+              <FormItem>
+                <FormLabel>Upload an image file</FormLabel>
+                <FormControl>
+                  <Input type="file" onChange={handleImageUpload} disabled={isUploading} />
+                </FormControl>
                 {isUploading && <p className="text-sm text-muted-foreground mt-2">Uploading...</p>}
-            </div>
-            {imageUrl && (
-              <div className="mt-4">
-                <FormLabel>Image Preview</FormLabel>
-                <div className="mt-2 relative aspect-video w-full max-w-sm">
-                    <Image src={imageUrl} alt="Image preview" fill className="rounded-md object-contain" />
-                </div>
-              </div>
-            )}
-        </div>
+                <FormMessage />
+              </FormItem>
+            </TabsContent>
+          </Tabs>
 
+          {imageUrl && (
+            <div className="mt-4">
+              <FormLabel>Image Preview</FormLabel>
+              <div className="mt-2 relative aspect-video w-full max-w-sm">
+                <Image src={imageUrl} alt="Image preview" fill className="rounded-md object-contain" />
+              </div>
+            </div>
+          )}
+        </div>
 
         <Button type="submit" disabled={isSaving || isUploading}>
           {isSaving ? 'Saving...' : 'Save Image'}
@@ -147,5 +172,3 @@ export default function GalleryForm({ image }: { image?: GalleryImage }) {
     </Form>
   );
 }
-
-    
