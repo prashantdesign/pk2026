@@ -1,31 +1,35 @@
 'use client';
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import type { SiteContent } from '@/types';
 import Link from 'next/link';
 
 interface HeroSectionProps {
-  content: SiteContent | null;
+  content?: Partial<SiteContent>;
 }
 
-export default function HeroSection({ content }: HeroSectionProps) {
+const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
   return (
-    <section id="home" className="relative h-[80vh] min-h-[500px] flex items-center justify-center text-center text-white overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary via-purple-500 to-accent opacity-80"></div>
-        <div className="absolute inset-0 bg-background/60"></div>
-        <div className="relative z-10 p-4">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter mb-4 text-foreground animate-fade-in-down">
-            {content?.heroTitle || "Creative Designer & Developer"}
-            </h1>
-            <p className="max-w-3xl mx-auto text-lg md:text-xl text-muted-foreground mb-8 animate-fade-in-up">
-            {content?.heroSubtitle || "I design and code beautiful simple things, and I love what I do."}
-            </p>
-            {content?.ctaText && content.ctaLink && (
-            <Button asChild size="lg" className="animate-fade-in-up">
-                <Link href={content.ctaLink}>{content.ctaText}</Link>
+    <section id="hero" className="relative flex h-[80vh] min-h-[600px] md:h-screen w-full items-center justify-center">
+      <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-fuchsia-100 via-purple-100 to-blue-100 dark:from-fuchsia-950/30 dark:via-purple-950/20 dark:to-blue-950/40"></div>
+      <div className="relative z-10 text-center px-4 container mx-auto">
+        <h1 className="text-5xl md:text-8xl font-bold tracking-tighter mb-4 text-foreground animate-fade-in-up">
+          {content?.heroTitle || 'Prashant Kumar'}
+        </h1>
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 animate-fade-in-up animation-delay-300">
+          {content?.heroSubtitle || 'Graphic Designer'}
+        </p>
+        <div className="animate-fade-in-up animation-delay-600">
+            <Button asChild size="lg" className="rounded-full px-8 py-6 text-lg">
+            <Link href={content?.ctaLink || '#contact'}>
+                {content?.ctaText || 'Contact'}
+            </Link>
             </Button>
-            )}
         </div>
+      </div>
     </section>
   );
-}
+};
+
+export default HeroSection;

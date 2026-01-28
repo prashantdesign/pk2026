@@ -1,56 +1,54 @@
 'use client';
+
 import React from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import Logo from '@/components/logo';
-import { Linkedin, Twitter, Instagram, Mail } from 'lucide-react';
 import type { SiteContent } from '@/types';
+import Logo from '../logo';
+import { Button } from '../ui/button';
+import { Linkedin, Twitter, Instagram, Mail } from 'lucide-react';
 
 interface FooterProps {
-  content: SiteContent | null;
+  content?: Partial<SiteContent>;
 }
 
-const SocialIcon = ({ name, url }: { name: string; url: string }) => {
-  const icons: { [key: string]: React.ElementType } = {
-    linkedin: Linkedin,
-    twitter: Twitter,
-    instagram: Instagram,
-    email: Mail,
-  };
-  const Icon = icons[name];
-  const isEmail = name === 'email';
-  
-  if (!Icon) return null;
-
+const SocialLink = ({ href, icon: Icon, label }: { href?: string; icon: React.ElementType; label: string }) => {
+  if (!href) return null;
   return (
-    <Button asChild variant="ghost" size="icon">
-      <Link href={isEmail ? `mailto:${url}` : url} target="_blank" rel="noopener noreferrer">
+    <a href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+      <Button variant="ghost" size="icon">
         <Icon className="h-5 w-5" />
-      </Link>
-    </Button>
+      </Button>
+    </a>
   );
 };
 
+const Footer: React.FC<FooterProps> = ({ content }) => {
+  const socials = content?.socials;
+  const currentYear = new Date().getFullYear();
 
-export default function Footer({ content }: FooterProps) {
-  const socials = content?.socials || {};
-  
   return (
     <footer className="bg-background border-t">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <Logo />
-            <div className="flex items-center gap-2">
-                {socials.linkedin && <SocialIcon name="linkedin" url={socials.linkedin} />}
-                {socials.twitter && <SocialIcon name="twitter" url={socials.twitter} />}
-                {socials.instagram && <SocialIcon name="instagram" url={socials.instagram} />}
-                {socials.email && <SocialIcon name="email" url={socials.email} />}
-            </div>
-            <p className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} PK.Design. All rights reserved.
-            </p>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <Logo />
+          <div className="flex gap-2">
+            <SocialLink href={socials?.twitter} icon={Twitter} label="Twitter" />
+            <SocialLink href={socials?.linkedin} icon={Linkedin} label="LinkedIn" />
+            <SocialLink href={socials?.instagram} icon={Instagram} label="Instagram" />
+            {socials?.email && (
+              <a href={`mailto:${socials.email}`} aria-label="Email">
+                <Button variant="ghost" size="icon">
+                  <Mail className="h-5 w-5" />
+                </Button>
+              </a>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            &copy; {currentYear} {content?.siteName || 'PK Design'}. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

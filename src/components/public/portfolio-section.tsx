@@ -1,63 +1,69 @@
 'use client';
-import React, { useMemo } from 'react';
-import { collection, query, orderBy } from 'firebase/firestore';
+import React from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { Project } from '@/types';
-import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 interface PortfolioSectionProps {
   onProjectClick: (project: Project) => void;
 }
 
-export default function PortfolioSection({ onProjectClick }: PortfolioSectionProps) {
+const PortfolioSection: React.FC<PortfolioSectionProps> = ({ onProjectClick }) => {
   const firestore = useFirestore();
-  const projectsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'projects'), orderBy('order', 'asc'));
-  }, [firestore]);
-
-  const { data: projects, isLoading: loading } = useCollection<Project>(projectsQuery);
+  const projectsQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'projects'), orderBy('order')) : null),
+    [firestore]
+  );
+  const { data: projects, isLoading } = useCollection<Project>(projectsQuery);
 
   return (
-    <section id="work" className="py-20 md:py-32">
+    <section id="work" className="py-24 sm:py-32 bg-secondary/30">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">My Work</h2>
-        
-        {loading && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-64 w-full" />
+        <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-12">My Work</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {isLoading &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-background rounded-lg shadow-md overflow-hidden">
+                <Skeleton className="w-full h-60" />
+                <div className="p-6">
+                  <Skeleton className="h-6 w-1/2 mb-2" />
+                  <Skeleton className="h-4 w-full mb-4" />
+                  <Skeleton className="h-10 w-32" />
+                </div>
+              </div>
             ))}
-          </div>
-        )}
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects?.map((project) => (
-            <Card 
-              key={project.id} 
-              className="overflow-hidden cursor-pointer group"
-              onClick={() => onProjectClick(project)}
+            <div
+              key={project.id}
+              className="group bg-card rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
             >
-              <CardContent className="p-0 relative aspect-[4/3]">
+              <div className="relative w-full h-60 overflow-hidden">
                 <Image
                   src={project.imageUrl}
                   alt={project.title}
                   fill
-                  className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="text-center text-white p-4">
-                    <h3 className="font-bold text-xl">{project.title}</h3>
-                    <p className="text-sm">{project.categoryId}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="p-6">
+                <Badge variant="secondary" className="mb-2">{project.categoryId}</Badge>
+                <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                <p className="text-muted-foreground mb-4 h-12 overflow-hidden">{project.description}</p>
+                <Button variant="ghost" onClick={() => onProjectClick(project)}>
+                  View Case Study <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           ))}
         </div>
       </div>
     </section>
   );
-}
+};
+
+export default PortfolioSection;

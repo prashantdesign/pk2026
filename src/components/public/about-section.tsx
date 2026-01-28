@@ -1,38 +1,44 @@
 'use client';
+
 import React from 'react';
-import Image from 'next/image';
 import type { SiteContent } from '@/types';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Image from 'next/image';
 
 interface AboutSectionProps {
-  content: SiteContent | null;
+  content?: Partial<SiteContent>;
 }
 
-export default function AboutSection({ content }: AboutSectionProps) {
-  const aboutImage = content?.aboutImageUrl || PlaceHolderImages.find(p => p.id === 'about-profile')?.imageUrl;
-  
+const AboutSection: React.FC<AboutSectionProps> = ({ content }) => {
   return (
-    <section id="about" className="py-20 md:py-32 bg-secondary/20">
+    <section id="about" className="py-24 sm:py-32">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="relative w-full max-w-sm mx-auto aspect-square">
-            {aboutImage && (
-              <Image
-                src={aboutImage}
-                alt="About me"
-                fill
-                className="rounded-lg object-cover shadow-lg"
-              />
-            )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className="order-2 md:order-1">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-6">About Me</h2>
+            <div className="prose prose-lg dark:prose-invert text-muted-foreground max-w-none">
+              <p>
+                {content?.aboutText ||
+                  "I'm a passionate and creative designer with a knack for turning complex ideas into beautiful, intuitive, and functional designs. With a strong foundation in branding, UI/UX, and print design, I thrive on bringing visions to life. My approach is collaborative and user-centric, ensuring that every project not only looks great but also achieves its goals."}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">About Me</h2>
-            <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-              {content?.aboutText || "I'm a passionate and creative designer with a knack for crafting beautiful and intuitive user experiences. With a background in graphic design and a love for technology, I bridge the gap between aesthetics and functionality."}
-            </p>
+          <div className="order-1 md:order-2 flex justify-center">
+             {content?.aboutImageUrl && (
+                <div className="relative w-72 h-72 md:w-80 md:h-80 rounded-full overflow-hidden shadow-lg">
+                    <Image
+                        src={content.aboutImageUrl}
+                        alt="A portrait of the designer"
+                        fill
+                        className="object-cover"
+                        data-ai-hint="profile portrait"
+                    />
+                </div>
+            )}
           </div>
         </div>
       </div>
     </section>
   );
-}
+};
+
+export default AboutSection;

@@ -1,93 +1,95 @@
 'use client';
+
 import React from 'react';
-import Image from 'next/image';
+import type { Project } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import type { Project } from '@/types';
-import { Icons } from '../icons';
+import { Icons } from '@/components/icons';
 
 interface ProjectModalProps {
-  project: Project | null;
+  project: Project;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ProjectModal({ project, isOpen, onClose }: ProjectModalProps) {
+const ProjectModal: React.FC<ProjectModalProps> = ({ project, isOpen, onClose }) => {
   if (!project) return null;
 
   const allImages = [project.imageUrl, ...project.projectImages].filter(Boolean);
-  const tools = project.toolsUsed?.split(',').map(tool => tool.trim().toLowerCase()) || [];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
-        <div className="grid md:grid-cols-2 h-full">
-            <div className="relative h-full hidden md:block">
-                <Carousel className="w-full h-full">
-                <CarouselContent className="h-full">
-                    {allImages.map((img, index) => (
-                    <CarouselItem key={index} className="h-full">
-                        <div className="relative w-full h-full">
-                        <Image
-                            src={img}
-                            alt={`${project.title} image ${index + 1}`}
-                            fill
-                            className="object-cover"
-                        />
-                        </div>
-                    </CarouselItem>
-                    ))}
-                </CarouselContent>
-                {allImages.length > 1 && (
-                    <>
-                        <CarouselPrevious className="left-4" />
-                        <CarouselNext className="right-4" />
-                    </>
-                )}
-                </Carousel>
-            </div>
-            <div className="flex flex-col h-full">
-                <DialogHeader className="p-6 pb-4 flex-shrink-0">
-                    <DialogTitle className="text-2xl">{project.title}</DialogTitle>
-                    <DialogDescription>{project.description}</DialogDescription>
-                </DialogHeader>
-                <div className="flex-grow overflow-y-auto px-6 pb-6 space-y-6">
-                    {project.problem && (
-                    <div>
-                        <h4 className="font-semibold mb-2">The Problem</h4>
-                        <p className="text-sm text-muted-foreground">{project.problem}</p>
-                    </div>
-                    )}
-                    {project.solution && (
-                    <div>
-                        <h4 className="font-semibold mb-2">The Solution</h4>
-                        <p className="text-sm text-muted-foreground">{project.solution}</p>
-                    </div>
-                    )}
-                    {project.outcome && (
-                    <div>
-                        <h4 className="font-semibold mb-2">Outcome</h4>
-                        <p className="text-sm text-muted-foreground">{project.outcome}</p>
-                    </div>
-                    )}
-                    {tools.length > 0 && (
-                        <div>
-                            <h4 className="font-semibold mb-2">Tools Used</h4>
-                            <div className="flex flex-wrap gap-2">
-                                {tools.map(tool => (
-                                    <Badge key={tool} variant="secondary" className="flex items-center gap-2 capitalize py-1 px-3">
-                                        <Icons name={tool} className="w-4 h-4" />
-                                        {tool}
-                                    </Badge>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-2xl">{project.title}</DialogTitle>
+          <DialogDescription>{project.description}</DialogDescription>
+        </DialogHeader>
+        <div className="flex-grow overflow-y-auto pr-6 -mr-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mt-4">
+                <div className="md:col-span-3">
+                    <Carousel>
+                        <CarouselContent>
+                        {allImages.map((img, index) => (
+                            <CarouselItem key={index}>
+                                <div className="aspect-video relative rounded-lg overflow-hidden">
+                                    <Image src={img} alt={`${project.title} - image ${index + 1}`} fill className="object-cover" />
+                                </div>
+                            </CarouselItem>
+                        ))}
+                        </CarouselContent>
+                        {allImages.length > 1 && (
+                            <>
+                                <CarouselPrevious className="absolute left-2" />
+                                <CarouselNext className="absolute right-2" />
+                            </>
+                        )}
+                    </Carousel>
                 </div>
+                <div className="md:col-span-2 space-y-4">
+                     <div className="space-y-1">
+                        <h4 className="font-semibold">Category</h4>
+                        <Badge variant="secondary">{project.categoryId}</Badge>
+                    </div>
+                     <div className="space-y-1">
+                        <h4 className="font-semibold">Tools Used</h4>
+                        <div className="flex flex-wrap gap-2">
+                             {project.toolsUsed?.split(',').map(tool => tool.trim()).map(tool => (
+                                <div key={tool} className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Icons name={tool} className="w-4 h-4"/>
+                                    <span>{tool}</span>
+                                </div>
+                             ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div className="mt-8 space-y-6 prose prose-lg dark:prose-invert max-w-none">
+                {project.problem && (
+                    <div>
+                        <h3>The Problem</h3>
+                        <p>{project.problem}</p>
+                    </div>
+                )}
+                {project.solution && (
+                    <div>
+                        <h3>The Solution</h3>
+                        <p>{project.solution}</p>
+                    </div>
+                )}
+                {project.outcome && (
+                    <div>
+                        <h3>Outcome</h3>
+                        <p>{project.outcome}</p>
+                    </div>
+                )}
             </div>
         </div>
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default ProjectModal;

@@ -45,7 +45,7 @@
   }
 
   .light {
-    --background: 220 20% 97%; /* Light Gray */
+    --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
@@ -57,7 +57,7 @@
     --primary: 263 80% 65%; /* Soft Purple */
     --primary-foreground: 0 0% 98%;
     
-    --secondary: 240 5% 90%;
+    --secondary: 240 5% 96%;
     --secondary-foreground: 240 10% 3.9%;
 
     --muted: 240 5% 90%;
@@ -94,5 +94,35 @@
   }
   html {
     scroll-behavior: smooth;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+
+  .no-animations * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@layer utilities {
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.5s ease-out forwards;
+    opacity: 0;
   }
 }
