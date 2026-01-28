@@ -1,88 +1,100 @@
 'use client';
-import React, { useMemo, useState } from 'react';
-import { collection, query, orderBy, where } from 'firebase/firestore';
-import { useFirestore, useCollection } from '@/firebase';
+
+import React, { useState, useMemo } from 'react';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { GalleryImage, GalleryCategory } from '@/types';
-import { Skeleton } from '../ui/skeleton';
+import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { Button } from '../ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function GallerySection() {
   const firestore = useFirestore();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const categoriesQuery = useMemo(() => {
+  const categoriesQuery = useMemoFirebase(() => 
+    firestore ? query(collection(firestore, 'galleryCategories'), orderBy('order')) : null
+  , [firestore]);
+  const { data: categories, loading: categoriesLoading } = useCollection<GalleryCategory>(categoriesQuery);
+
+  const allImagesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'galleryCategories'), orderBy('order'));
+    return query(collection(firestore, 'galleryImages'), orderBy('order'));
   }, [firestore]);
 
-  const imagesQuery = useMemo(() => {
-    if (!firestore) return null;
-    if (selectedCategory) {
-        return query(collection(firestore, 'galleryImages'), where('galleryCategoryId', '==', selectedCategory), orderBy('order'));
-    }
-    return query(collection(firestore, 'galleryImages'), orderBy('order'));
-  }, [firestore, selectedCategory]);
-
-  const { data: categories, loading: categoriesLoading } = useCollection<GalleryCategory>(categoriesQuery);
-  const { data: images, loading: imagesLoading } = useCollection<GalleryImage>(imagesQuery);
+  const { data: allImages, isLoading: imagesLoading } = useCollection<GalleryImage>(allImagesQuery);
+  
+  const filteredImages = useMemo(() => {
+    if (!allImages) return [];
+    if (selectedCategory === 'all') return allImages;
+    return allImages.filter(p => p.galleryCategoryId === selectedCategory);
+  }, [allImages, selectedCategory]);
 
   const loading = categoriesLoading || imagesLoading;
 
   return (
-    <section id="gallery" className="py-20 md:py-32">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">Gallery</h2>
-        <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-          A curated collection of my visual explorations and design work.
-        </p>
+    <section id="gallery" className="bg-muted/40">
+      <div className="container mx-auto px-4 py-16 sm:py-24">
+        <div className="text-center mb-12 animate-fade-in-up">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Gallery</h2>
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+            A collection of my visual work and inspiration.
+          </p>
+        </div>
+
+        <div className="flex justify-center flex-wrap gap-2 mb-12 animate-fade-in-up animation-delay-300">
+          <Button
+            variant={selectedCategory === 'all' ? 'default' : 'outline'}
+            onClick={() => setSelectedCategory('all')}
+          >
+            All
+          </Button>
+          {categories?.map((category) => (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? 'default' : 'outline'}
+              onClick={() => setSelectedCategory(category.id)}
+            >
+              {category.name}
+            </Button>
+          ))}
+        </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Skeleton className="h-64" />
-            <Skeleton className="h-80" />
-            <Skeleton className="h-64" />
-            <Skeleton className="h-80" />
-            <Skeleton className="h-64" />
-            <Skeleton className="h-80" />
-          </div>
-        ) : (
-          <>
-            <div className="flex justify-center flex-wrap gap-2 mb-12">
-              <Button
-                variant={!selectedCategory ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(null)}
-              >
-                All
-              </Button>
-              {categories?.map((cat) => (
-                <Button
-                  key={cat.id}
-                  variant={selectedCategory === cat.id ? 'default' : 'outline'}
-                  onClick={() => setSelectedCategory(cat.id)}
-                >
-                  {cat.name}
-                </Button>
-              ))}
-            </div>
-
             <div className="columns-2 md:columns-3 gap-4">
-              {images?.map((image, index) => (
-                <div key={image.id} className="mb-4 break-inside-avoid animate-fade-in-up" style={{ animationDelay: `${index * 100}ms`}}>
-                  <Image
+                <Skeleton className="h-64 mb-4" />
+                <Skeleton className="h-96 mb-4" />
+                <Skeleton className="h-80 mb-4" />
+                <Skeleton className="h-96 mb-4" />
+                <Skeleton className="h-64 mb-4" />
+                <Skeleton className="h-80 mb-4" />
+            </div>
+        ) : (
+          <div className="columns-2 md:columns-3 gap-4 [column-fill:_balance]">
+            {filteredImages?.map((image, index) => (
+              <div
+                key={image.id}
+                className="mb-4 break-inside-avoid animate-fade-in-up"
+                style={{ animationDelay: `${300 + index * 100}ms` }}
+              >
+                <div className="group relative overflow-hidden rounded-lg">
+                    <Image
                     src={image.imageUrl}
                     alt={image.title}
                     width={500}
                     height={500}
-                    className="w-full h-auto rounded-lg shadow-md"
-                  />
+                    className="w-full h-auto object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                        <p className="text-white text-sm font-semibold">{image.title}</p>
+                    </div>
                 </div>
-              ))}
-            </div>
-             {images?.length === 0 && (
-                <p className="text-center text-muted-foreground">No images found for this category.</p>
-            )}
-          </>
+              </div>
+            ))}
+          </div>
+        )}
+        { !loading && filteredImages?.length === 0 && (
+          <p className="text-center text-muted-foreground mt-8">No images found in this category.</p>
         )}
       </div>
     </section>

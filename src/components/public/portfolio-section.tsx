@@ -1,10 +1,11 @@
 'use client';
+
 import React, { useState, useMemo } from 'react';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { Project, ProjectCategory } from '@/types';
-import { useFirestore, useCollection } from '@/firebase';
-import { collection, query, orderBy, where } from 'firebase/firestore';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface PortfolioSectionProps {
@@ -12,92 +13,89 @@ interface PortfolioSectionProps {
 }
 
 export default function PortfolioSection({ onProjectClick }: PortfolioSectionProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const firestore = useFirestore();
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  const categoriesQuery = useMemo(() => {
+  const categoriesQuery = useMemoFirebase(() => 
+    firestore ? query(collection(firestore, 'projectCategories'), orderBy('order')) : null
+  , [firestore]);
+  const { data: categories, loading: categoriesLoading } = useCollection<ProjectCategory>(categoriesQuery);
+
+  const allProjectsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'projectCategories'), orderBy('order'));
+    return query(collection(firestore, 'projects'), orderBy('order'));
   }, [firestore]);
 
-  const projectsQuery = useMemo(() => {
-    if (!firestore) return null;
-    if (selectedCategory) {
-      return query(collection(firestore, 'projects'), where('projectCategoryId', '==', selectedCategory), orderBy('order'));
-    }
-    return query(collection(firestore, 'projects'), orderBy('order'));
-  }, [firestore, selectedCategory]);
-
-  const { data: categories, loading: categoriesLoading } = useCollection<ProjectCategory>(categoriesQuery);
-  const { data: projects, loading: projectsLoading } = useCollection<Project>(projectsQuery);
+  const { data: allProjects, isLoading: projectsLoading } = useCollection<Project>(allProjectsQuery);
+  
+  const filteredProjects = useMemo(() => {
+    if (!allProjects) return [];
+    if (selectedCategory === 'all') return allProjects;
+    return allProjects.filter(p => p.projectCategoryId === selectedCategory);
+  }, [allProjects, selectedCategory]);
 
   const loading = categoriesLoading || projectsLoading;
 
   return (
-    <section id="work" className="py-20 md:py-32 bg-secondary/50">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">Selected Work</h2>
-        <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-          Here are some of the projects I'm most proud of.
+    <section id="work" className="container mx-auto px-4 py-16 sm:py-24">
+      <div className="text-center mb-12 animate-fade-in-up">
+        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">My Work</h2>
+        <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">A selection of my projects.
         </p>
-
-        {loading ? (
-            <div className="grid md:grid-cols-2 gap-8">
-                <Skeleton className="h-80" />
-                <Skeleton className="h-80" />
-                <Skeleton className="h-80" />
-                <Skeleton className="h-80" />
-            </div>
-        ) : (
-            <>
-                <div className="flex justify-center flex-wrap gap-2 mb-12">
-                    <Button
-                        variant={!selectedCategory ? 'default' : 'outline'}
-                        onClick={() => setSelectedCategory(null)}
-                        className="rounded-full"
-                    >
-                        All
-                    </Button>
-                    {categories?.map((cat) => (
-                        <Button
-                        key={cat.id}
-                        variant={selectedCategory === cat.id ? 'default' : 'outline'}
-                        onClick={() => setSelectedCategory(cat.id)}
-                        className="rounded-full"
-                        >
-                        {cat.name}
-                        </Button>
-                    ))}
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-8">
-                {projects?.map((project, index) => (
-                    <div
-                    key={project.id}
-                    className="group cursor-pointer animate-fade-in-up"
-                    onClick={() => onProjectClick(project)}
-                    style={{ animationDelay: `${index * 100}ms`}}
-                    >
-                    <div className="overflow-hidden rounded-lg mb-4">
-                        <Image
-                        src={project.imageUrl}
-                        alt={project.title}
-                        width={600}
-                        height={400}
-                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
-                        />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-1">{project.title}</h3>
-                    <p className="text-muted-foreground">{project.description}</p>
-                    </div>
-                ))}
-                </div>
-                 {projects?.length === 0 && (
-                    <p className="text-center text-muted-foreground">No projects found for this category.</p>
-                )}
-            </>
-        )}
       </div>
+
+      <div className="flex justify-center flex-wrap gap-2 mb-12 animate-fade-in-up animation-delay-300">
+        <Button
+          variant={selectedCategory === 'all' ? 'default' : 'outline'}
+          onClick={() => setSelectedCategory('all')}
+        >
+          All
+        </Button>
+        {categories?.map((category) => (
+          <Button
+            key={category.id}
+            variant={selectedCategory === category.id ? 'default' : 'outline'}
+            onClick={() => setSelectedCategory(category.id)}
+          >
+            {category.name}
+          </Button>
+        ))}
+      </div>
+
+      {loading ? (
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Skeleton className="h-80 w-full" />
+            <Skeleton className="h-80 w-full" />
+            <Skeleton className="h-80 w-full" />
+            <Skeleton className="h-80 w-full" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {filteredProjects?.map((project, index) => (
+            <div
+              key={project.id}
+              className="group relative overflow-hidden rounded-lg cursor-pointer animate-fade-in-up aspect-[4/3]"
+              style={{ animationDelay: `${300 + index * 100}ms` }}
+              onClick={() => onProjectClick(project)}
+            >
+              <Image
+                src={project.imageUrl}
+                alt={project.title}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+              <div className="absolute bottom-0 left-0 p-6 text-white">
+                <h3 className="text-xl font-bold">{project.title}</h3>
+                <p className="text-sm opacity-80">{project.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      { !loading && filteredProjects?.length === 0 && (
+        <p className="text-center text-muted-foreground mt-8">No projects found in this category.</p>
+      )}
     </section>
   );
 }
