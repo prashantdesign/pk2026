@@ -131,31 +131,47 @@
         "id"
       ]
     },
-    "Category": {
+    "ProjectCategory": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Category",
+      "title": "ProjectCategory",
       "type": "object",
       "description": "Represents a category for portfolio projects.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Category entity."
+          "description": "Unique identifier for the category."
         },
         "name": {
           "type": "string",
           "description": "The name of the category."
         },
-        "description": {
+        "order": {
+          "type": "number",
+          "description": "The display order of the category."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "GalleryCategory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GalleryCategory",
+      "type": "object",
+      "description": "Represents a category for gallery images.",
+      "properties": {
+        "id": {
           "type": "string",
-          "description": "A description of the category."
+          "description": "Unique identifier for the category."
         },
-        "isVisible": {
-          "type": "boolean",
-          "description": "Determines if the category is visible."
+        "name": {
+          "type": "string",
+          "description": "The name of the category."
         },
         "order": {
           "type": "number",
-          "description": "The order in which the category is displayed."
+          "description": "The display order of the category."
         }
       },
       "required": [
@@ -181,9 +197,9 @@
           "type": "string",
           "description": "A short description of the project."
         },
-        "categoryId": {
+        "projectCategoryId": {
           "type": "string",
-          "description": "Reference to Category. (Relationship: Category 1:N Project)"
+          "description": "Reference to ProjectCategory. (Relationship: ProjectCategory 1:N Project)"
         },
         "imageUrl": {
           "type": "string",
@@ -230,7 +246,7 @@
       "required": [
         "id",
         "title",
-        "categoryId"
+        "projectCategoryId"
       ]
     },
     "ContactMessage": {
@@ -293,6 +309,10 @@
           "description": "URL of the gallery image.",
           "format": "uri"
         },
+        "galleryCategoryId": {
+          "type": "string",
+          "description": "Reference to GalleryCategory. (Relationship: GalleryCategory 1:N GalleryImage)"
+        },
         "order": {
           "type": "number",
           "description": "The display order of the image in the gallery."
@@ -301,7 +321,8 @@
       "required": [
         "id",
         "title",
-        "imageUrl"
+        "imageUrl",
+        "galleryCategoryId"
       ]
     }
   },
@@ -329,17 +350,33 @@
         }
       },
       {
-        "path": "/categories/{categoryId}",
+        "path": "/projectCategories/{categoryId}",
         "definition": {
-          "entityName": "Category",
+          "entityName": "ProjectCategory",
           "schema": {
-            "$ref": "#/backend/entities/Category"
+            "$ref": "#/backend/entities/ProjectCategory"
           },
-          "description": "Stores portfolio categories.",
+          "description": "Stores portfolio project categories.",
           "params": [
             {
               "name": "categoryId",
-              "description": "Unique identifier for the category."
+              "description": "Unique identifier for the project category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/galleryCategories/{categoryId}",
+        "definition": {
+          "entityName": "GalleryCategory",
+          "schema": {
+            "$ref": "#/backend/entities/GalleryCategory"
+          },
+          "description": "Stores gallery image categories.",
+          "params": [
+            {
+              "name": "categoryId",
+              "description": "Unique identifier for the gallery category."
             }
           ]
         }
@@ -351,7 +388,7 @@
           "schema": {
             "$ref": "#/backend/entities/Project"
           },
-          "description": "Stores portfolio projects, including a reference to the category ID.",
+          "description": "Stores portfolio projects, including a reference to the project category ID.",
           "params": [
             {
               "name": "projectId",
@@ -383,7 +420,7 @@
           "schema": {
             "$ref": "#/backend/entities/GalleryImage"
           },
-          "description": "Stores images for the public gallery.",
+          "description": "Stores images for the public gallery, including a reference to the gallery category ID.",
           "params": [
             {
               "name": "imageId",
@@ -393,6 +430,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to support a single-page portfolio website with a hidden admin dashboard, focusing on simplicity, security, and real-time updates. It leverages structural segregation and denormalization to ensure authorization independence and efficient data retrieval.\n\n**Authorization Independence (Denormalization):** The structure avoids hierarchical authorization dependencies by storing all authorization-related data directly within each document. For example, the `projects` collection contains `categoryId` which is used for authorization, eliminating the need to fetch parent category data.\n\n**Structural Segregation (Homogeneous Security Posture):** Data with different access needs are stored in separate collections. Public portfolio data (projects, categories, site content) is separated from private contact messages.\n\n**QAPs (Rules are not Filters):** Secure list operations are supported by segregating data into collections with uniform security requirements. Only authenticated admin can view the Contact Messages.\n\n**Access Modeling:**\n*   **Admin Role:** Authenticated admins can manage all content and view contact messages.\n\nThis design ensures clear, maintainable security rules without complex `get()` calls, enabling atomic operations and straightforward debugging."
+    "reasoning": "The Firestore structure is designed to support a single-page portfolio website with a hidden admin dashboard, focusing on simplicity, security, and real-time updates. It leverages structural segregation and denormalization to ensure authorization independence and efficient data retrieval.\n\n**Authorization Independence (Denormalization):** The structure avoids hierarchical authorization dependencies by storing all authorization-related data directly within each document. For example, the `projects` collection contains `projectCategoryId` which is used for authorization, eliminating the need to fetch parent category data.\n\n**Structural Segregation (Homogeneous Security Posture):** Data with different access needs are stored in separate collections. Public portfolio data (projects, categories, site content) is separated from private contact messages.\n\n**QAPs (Rules are not Filters):** Secure list operations are supported by segregating data into collections with uniform security requirements. Only authenticated admin can view the Contact Messages.\n\n**Access Modeling:**\n*   **Admin Role:** Authenticated admins can manage all content and view contact messages.\n\nThis design ensures clear, maintainable security rules without complex `get()` calls, enabling atomic operations and straightforward debugging."
   }
 }

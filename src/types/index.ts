@@ -4,7 +4,7 @@ export interface Project {
   id: string;
   title: string;
   description: string;
-  categoryId: string;
+  projectCategoryId: string;
   imageUrl: string;
   projectImages: string[];
   toolsUsed: string;
@@ -20,15 +20,21 @@ export interface GalleryImage {
   id: string;
   title: string;
   imageUrl: string;
+  galleryCategoryId: string;
   order: number;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
 
-export interface Category {
+export interface ProjectCategory {
   id: string;
   name: string;
-  description: string;
+  order: number;
+}
+
+export interface GalleryCategory {
+  id: string;
+  name: string;
   order: number;
 }
 

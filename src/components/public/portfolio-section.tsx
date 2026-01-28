@@ -1,104 +1,103 @@
-"use client";
-
-import React, { useMemo, useState } from 'react';
-import type { Project } from '@/types';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
-import { Button } from '../ui/button';
-import { Card, CardContent } from '../ui/card';
+'use client';
+import React, { useState, useMemo } from 'react';
+import type { Project, ProjectCategory } from '@/types';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, orderBy, where } from 'firebase/firestore';
 import Image from 'next/image';
-import { Skeleton } from '../ui/skeleton';
-import { Icons } from '../icons';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const ProjectCard = ({ project, onProjectClick }: { project: Project, onProjectClick: (project: Project) => void }) => {
-  return (
-    <Card 
-      className="overflow-hidden group cursor-pointer animate-fade-in-up"
-      onClick={() => onProjectClick(project)}
-    >
-      <CardContent className="p-0">
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <Image
-            src={project.imageUrl}
-            alt={project.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            data-ai-hint="project image"
-          />
-        </div>
-        <div className="p-6">
-          <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
-          <p className="text-muted-foreground text-sm mb-4">{project.description}</p>
-          <div className="flex flex-wrap gap-2">
-            {project.toolsUsed?.split(',').map((tool) => {
-              const toolName = tool.trim().toLowerCase();
-              return (
-                <div key={toolName} className="flex items-center gap-2 bg-secondary text-secondary-foreground/80 px-2 py-1 rounded-md">
-                   <Icons name={toolName} className="h-4 w-4" />
-                   <span className="text-xs font-medium">{tool.trim()}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+interface PortfolioSectionProps {
+  onProjectClick: (project: Project) => void;
+}
 
-const ProjectsList = ({ onProjectClick }: { onProjectClick: (project: Project) => void }) => {
+export default function PortfolioSection({ onProjectClick }: PortfolioSectionProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const firestore = useFirestore();
-  const [visibleProjects, setVisibleProjects] = useState(6);
 
-  const projectsQuery = useMemoFirebase(
-    () => firestore ? query(collection(firestore, 'projects'), orderBy('order', 'asc')) : null,
-    [firestore]
-  );
-  
-  const { data: projects, isLoading } = useCollection<Project>(projectsQuery);
+  const categoriesQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'projectCategories'), orderBy('order'));
+  }, [firestore]);
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-96 w-full" />)}
-      </div>
-    )
-  }
+  const projectsQuery = useMemo(() => {
+    if (!firestore) return null;
+    if (selectedCategory) {
+      return query(collection(firestore, 'projects'), where('projectCategoryId', '==', selectedCategory), orderBy('order'));
+    }
+    return query(collection(firestore, 'projects'), orderBy('order'));
+  }, [firestore, selectedCategory]);
+
+  const { data: categories, loading: categoriesLoading } = useCollection<ProjectCategory>(categoriesQuery);
+  const { data: projects, loading: projectsLoading } = useCollection<Project>(projectsQuery);
+
+  const loading = categoriesLoading || projectsLoading;
 
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {projects?.slice(0, visibleProjects).map((project, index) => (
-          <div key={project.id} style={{ animationDelay: `${index * 150}ms`}}>
-            <ProjectCard project={project} onProjectClick={onProjectClick} />
-          </div>
-        ))}
-      </div>
-      {projects && visibleProjects < projects.length && (
-        <div className="text-center mt-16">
-          <Button onClick={() => setVisibleProjects(projects.length)} size="lg">
-            Show All Projects
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const PortfolioSection = ({ onProjectClick }: { onProjectClick: (project: Project) => void }) => {
-  return (
-    <section id="work" className="py-20 md:py-32">
+    <section id="work" className="py-20 md:py-32 bg-secondary/50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-4xl font-bold tracking-tight">My Work</h2>
-          <p className="text-muted-foreground mt-2">A collection of my favorite projects.</p>
-        </div>
-        <ProjectsList onProjectClick={onProjectClick} />
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">Selected Work</h2>
+        <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+          Here are some of the projects I'm most proud of.
+        </p>
+
+        {loading ? (
+            <div className="grid md:grid-cols-2 gap-8">
+                <Skeleton className="h-80" />
+                <Skeleton className="h-80" />
+                <Skeleton className="h-80" />
+                <Skeleton className="h-80" />
+            </div>
+        ) : (
+            <>
+                <div className="flex justify-center flex-wrap gap-2 mb-12">
+                    <Button
+                        variant={!selectedCategory ? 'default' : 'outline'}
+                        onClick={() => setSelectedCategory(null)}
+                        className="rounded-full"
+                    >
+                        All
+                    </Button>
+                    {categories?.map((cat) => (
+                        <Button
+                        key={cat.id}
+                        variant={selectedCategory === cat.id ? 'default' : 'outline'}
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className="rounded-full"
+                        >
+                        {cat.name}
+                        </Button>
+                    ))}
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                {projects?.map((project, index) => (
+                    <div
+                    key={project.id}
+                    className="group cursor-pointer animate-fade-in-up"
+                    onClick={() => onProjectClick(project)}
+                    style={{ animationDelay: `${index * 100}ms`}}
+                    >
+                    <div className="overflow-hidden rounded-lg mb-4">
+                        <Image
+                        src={project.imageUrl}
+                        alt={project.title}
+                        width={600}
+                        height={400}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                        />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-1">{project.title}</h3>
+                    <p className="text-muted-foreground">{project.description}</p>
+                    </div>
+                ))}
+                </div>
+                 {projects?.length === 0 && (
+                    <p className="text-center text-muted-foreground">No projects found for this category.</p>
+                )}
+            </>
+        )}
       </div>
     </section>
   );
-};
-
-export default PortfolioSection;
-
-    
+}

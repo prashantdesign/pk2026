@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useCollection } from '@/firebase';
-import type { Project, ProjectCategory } from '@/types';
+import type { ProjectCategory } from '@/types';
 import {
   Table,
   TableBody,
@@ -28,50 +28,34 @@ import { Skeleton } from '../ui/skeleton';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
-export default function ProjectsClient() {
+export default function ProjectCategoriesClient() {
   const router = useRouter();
   const { toast } = useToast();
   const firestore = useFirestore();
 
-  const projectsQuery = useMemo(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'projects'), orderBy('order', 'asc'));
-  }, [firestore]);
-
   const categoriesQuery = useMemo(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'projectCategories'));
+    return query(collection(firestore, 'projectCategories'), orderBy('order', 'asc'));
   }, [firestore]);
-  
-  const { data: projects, loading: projectsLoading } = useCollection<Project>(projectsQuery);
-  const { data: categories, loading: categoriesLoading } = useCollection<ProjectCategory>(categoriesQuery);
 
-  const categoryMap = useMemo(() => {
-    if (!categories) return {};
-    return categories.reduce((acc, cat) => {
-      acc[cat.id] = cat.name;
-      return acc;
-    }, {} as Record<string, string>);
-  }, [categories]);
+  const { data: categories, loading } = useCollection<ProjectCategory>(categoriesQuery);
 
   const handleDelete = (id: string) => {
-      if (!firestore || !window.confirm("Are you sure you want to delete this project?")) return;
-      const projectRef = doc(firestore, "projects", id);
-      deleteDoc(projectRef)
+      if (!firestore || !window.confirm("Are you sure you want to delete this category? This might affect existing projects.")) return;
+      const categoryRef = doc(firestore, "projectCategories", id);
+      deleteDoc(categoryRef)
         .then(() => {
-            toast({ title: "Project deleted successfully." });
+            toast({ title: "Category deleted successfully." });
         })
         .catch((serverError) => {
-            toast({ variant: "destructive", title: "Failed to delete project." });
+            toast({ variant: "destructive", title: "Failed to delete category." });
             const permissionError = new FirestorePermissionError({
-              path: projectRef.path,
+              path: categoryRef.path,
               operation: 'delete',
             });
             errorEmitter.emit('permission-error', permissionError);
         });
   }
-
-  const loading = projectsLoading || categoriesLoading;
 
   if (loading) {
     return <Skeleton className="h-64 w-full" />
@@ -83,8 +67,7 @@ export default function ProjectsClient() {
             <Table>
             <TableHeader>
                 <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Category</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead>Order</TableHead>
                 <TableHead>
                     <span className="sr-only">Actions</span>
@@ -92,12 +75,11 @@ export default function ProjectsClient() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {projects && projects.length > 0 ? (
-                    projects.map((project) => (
-                        <TableRow key={project.id}>
-                        <TableCell className="font-medium">{project.title}</TableCell>
-                        <TableCell>{categoryMap[project.projectCategoryId] || 'N/A'}</TableCell>
-                        <TableCell>{project.order}</TableCell>
+                {categories && categories.length > 0 ? (
+                    categories.map((category) => (
+                        <TableRow key={category.id}>
+                        <TableCell className="font-medium">{category.name}</TableCell>
+                        <TableCell>{category.order}</TableCell>
                         <TableCell>
                             <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -108,10 +90,10 @@ export default function ProjectsClient() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => router.push(`/admin/projects/edit/${project.id}`)}>
+                                <DropdownMenuItem onClick={() => router.push(`/admin/project-categories/edit/${category.id}`)}>
                                     <Pencil className="mr-2 h-4 w-4" /> Edit
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(project.id)}>
+                                <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(category.id)}>
                                     <Trash2 className="mr-2 h-4 w-4" /> Delete
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -121,8 +103,8 @@ export default function ProjectsClient() {
                     ))
                 ) : (
                     <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center">
-                            No projects found.
+                        <TableCell colSpan={3} className="h-24 text-center">
+                            No project categories found.
                         </TableCell>
                     </TableRow>
                 )}

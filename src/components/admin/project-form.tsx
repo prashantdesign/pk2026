@@ -7,8 +7,8 @@ import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { useFirestore, useDoc } from '@/firebase';
+import { doc, setDoc, addDoc, collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { useFirestore, useDoc, useCollection } from '@/firebase';
 import { generateProjectDetails } from '@/ai/flows/generate-project-details';
 
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Sparkles } from 'lucide-react';
-import type { Project, SiteContent } from '@/types';
+import type { Project, SiteContent, ProjectCategory } from '@/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,7 +27,7 @@ import Image from 'next/image';
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  categoryId: z.string().min(1, "Category is required"),
+  projectCategoryId: z.string().min(1, "Category is required"),
   imageUrl: z.string().url("A valid main image URL is required"),
   projectImages: z.array(z.string().url()),
   toolsUsed: z.string(),
@@ -75,11 +76,17 @@ export default function ProjectForm({ project }: { project?: Project }) {
   const siteContentRef = useMemo(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
   const { data: siteContent } = useDoc<SiteContent>(siteContentRef);
 
+  const categoriesQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'projectCategories'), orderBy('name'));
+  }, [firestore]);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<ProjectCategory>(categoriesQuery);
+
 
   const defaultValues: Partial<ProjectFormValues> = {
     title: project?.title || '',
     description: project?.description || '',
-    categoryId: project?.categoryId || '',
+    projectCategoryId: project?.projectCategoryId || '',
     imageUrl: project?.imageUrl || '',
     projectImages: project?.projectImages || [],
     toolsUsed: project?.toolsUsed || '',
@@ -187,9 +194,30 @@ export default function ProjectForm({ project }: { project?: Project }) {
             )} />
           </div>
           <div className="space-y-6">
-             <FormField control={form.control} name="categoryId" render={({ field }) => (
-                <FormItem><FormLabel>Category</FormLabel><FormControl><Input placeholder="e.g., Branding" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
+             <FormField
+                control={form.control}
+                name="projectCategoryId"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={categoriesLoading}>
+                    <FormControl>
+                        <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        {categories?.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                                {cat.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
              <FormField control={form.control} name="toolsUsed" render={({ field }) => (
                 <FormItem><FormLabel>Tools Used</FormLabel><FormControl><Input placeholder="Figma, Photoshop" {...field} /></FormControl><FormDescription>Comma-separated values.</FormDescription><FormMessage /></FormItem>
             )} />
@@ -309,7 +337,7 @@ export default function ProjectForm({ project }: { project?: Project }) {
           )}
         </Accordion>
 
-        <Button type="submit" disabled={isSaving || isUploading || isGenerating}>
+        <Button type="submit" disabled={isSaving || isUploading || isGenerating || categoriesLoading}>
           {isSaving ? 'Saving...' : 'Save Project'}
         </Button>
       </form>

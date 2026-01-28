@@ -1,20 +1,21 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { doc, setDoc, addDoc, collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { useFirestore, useCollection } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { GalleryImage } from '@/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { GalleryImage, GalleryCategory } from '@/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import Image from 'next/image';
@@ -22,6 +23,7 @@ import Image from 'next/image';
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   imageUrl: z.string().url("A valid image URL is required"),
+  galleryCategoryId: z.string().min(1, "Category is required"),
   order: z.coerce.number().default(0),
 });
 
@@ -60,9 +62,16 @@ export default function GalleryForm({ image }: { image?: GalleryImage }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  const categoriesQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'galleryCategories'), orderBy('name'));
+  }, [firestore]);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<GalleryCategory>(categoriesQuery);
+
   const defaultValues: Partial<GalleryFormValues> = {
     title: image?.title || '',
     imageUrl: image?.imageUrl || '',
+    galleryCategoryId: image?.galleryCategoryId || '',
     order: image?.order || 0,
   };
 
@@ -117,6 +126,31 @@ export default function GalleryForm({ image }: { image?: GalleryImage }) {
             <FormItem><FormLabel>Image Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
         )} />
         
+        <FormField
+            control={form.control}
+            name="galleryCategoryId"
+            render={({ field }) => (
+            <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={categoriesLoading}>
+                <FormControl>
+                    <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                    {categories?.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+                </Select>
+                <FormMessage />
+            </FormItem>
+            )}
+        />
+
         <FormField control={form.control} name="order" render={({ field }) => (
             <FormItem><FormLabel>Order</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
         )} />
@@ -165,7 +199,7 @@ export default function GalleryForm({ image }: { image?: GalleryImage }) {
           )}
         </div>
 
-        <Button type="submit" disabled={isSaving || isUploading}>
+        <Button type="submit" disabled={isSaving || isUploading || categoriesLoading}>
           {isSaving ? 'Saving...' : 'Save Image'}
         </Button>
       </form>

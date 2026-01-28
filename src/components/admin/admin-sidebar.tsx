@@ -20,6 +20,7 @@ import {
   Settings,
   LogOut,
   Images,
+  FolderKanban,
 } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
@@ -51,6 +52,7 @@ const AdminSidebar = () => {
   const menuItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/site-content', label: 'Site Content', icon: Palette },
+    { href: '/admin/categories', label: 'Categories', icon: FolderKanban },
     { href: '/admin/gallery', label: 'Gallery', icon: Images },
     { href: '/admin/projects', label: 'Projects', icon: Briefcase },
     { href: '/admin/messages', label: 'Messages', icon: Mails },
@@ -94,5 +96,3 @@ const AdminSidebar = () => {
 };
 
 export default AdminSidebar;
-
-    

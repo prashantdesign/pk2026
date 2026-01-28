@@ -11,7 +11,8 @@
  * Data Structure:
  * The data is organized into distinct, top-level collections to enforce a clear separation of security concerns (Structural Segregation):
  * - /siteContent: Singleton collection for global website configuration.
- * - /categories: Defines categories for portfolio projects.
+ * - /projectCategories: Defines categories for portfolio projects.
+ * - /galleryCategories: Defines categories for gallery images.
  * - /projects: Contains the individual portfolio projects.
  * - /galleryImages: Stores images for the public gallery.
  * - /contactMessages: A private collection to store user-submitted contact form messages.
@@ -73,9 +74,6 @@ service cloud.firestore {
     /**
      * @description Manages global site content. Publicly readable, but only admins can modify it.
      * @path /siteContent/{siteContentId}
-     * @allow (get) Any user, authenticated or not, can read the site's configuration.
-     * @deny (create) An anonymous user attempts to create a new site configuration document.
-     * @principle Public read access for site content, with writes restricted to administrators.
      */
     match /siteContent/{siteContentId} {
       allow get, list: if true;
@@ -85,23 +83,27 @@ service cloud.firestore {
 
     /**
      * @description Manages portfolio project categories. Publicly readable, but only admins can manage them.
-     * @path /categories/{categoryId}
-     * @allow (list) Any user can retrieve the list of all project categories.
-     * @deny (update) A public visitor attempts to change the name of a category.
-     * @principle Public read access for portfolio structure, with writes restricted to administrators.
+     * @path /projectCategories/{categoryId}
      */
-    match /categories/{categoryId} {
+    match /projectCategories/{categoryId} {
       allow get, list: if true;
       allow create: if isAdmin();
       allow update, delete: if isAdmin() && isExistingDoc();
     }
 
     /**
+     * @description Manages gallery image categories. Publicly readable, but only admins can manage them.
+     * @path /galleryCategories/{categoryId}
+     */
+    match /galleryCategories/{categoryId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin() && isExistingDoc();
+    }
+    
+    /**
      * @description Manages portfolio projects. Publicly readable, but only admins can manage them.
      * @path /projects/{projectId}
-     * @allow (get) Any user can view the details of a specific project.
-     * @deny (delete) A public visitor attempts to delete a project.
-     * @principle Public read access for portfolio content, with writes restricted to administrators.
      */
     match /projects/{projectId} {
       allow get, list: if true;
@@ -112,9 +114,6 @@ service cloud.firestore {
     /**
      * @description Manages gallery images. Publicly readable, but only admins can manage them.
      * @path /galleryImages/{imageId}
-     * @allow (get) Any user can view the details of a specific gallery image.
-     * @deny (delete) A public visitor attempts to delete an image.
-     * @principle Public read access for portfolio content, with writes restricted to administrators.
      */
     match /galleryImages/{imageId} {
       allow get, list: if true;
@@ -125,9 +124,6 @@ service cloud.firestore {
     /**
      * @description A "dropbox" for contact form submissions. Anyone can create, but only admins can read/manage.
      * @path /contactMessages/{messageId}
-     * @allow (create) An unauthenticated visitor submits the contact form, creating a new message.
-     * @deny (list) An unauthenticated visitor attempts to list all submitted contact messages.
-     * @principle Structural segregation for private data. Allows public write-once access while keeping all documents private.
      */
     match /contactMessages/{messageId} {
       allow get, list: if isAdmin();
