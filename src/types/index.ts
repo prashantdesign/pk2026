@@ -53,6 +53,7 @@ export interface SiteContent {
   };
   aiSettings?: {
     geminiModel?: string;
+    isAiFeatureEnabled?: boolean;
   };
   theme?: 'light' | 'dark';
   isMaintenanceModeEnabled?: boolean;

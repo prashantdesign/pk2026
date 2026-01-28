@@ -22,6 +22,7 @@ import type { SiteContent } from '@/types';
 import { Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import Image from 'next/image';
+import { Switch } from '../ui/switch';
 
 const formSchema = z.object({
   siteName: z.string().optional(),
@@ -46,6 +47,7 @@ const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal('')),
 
   geminiModel: z.string().optional(),
+  isAiFeatureEnabled: z.boolean().default(true),
 });
 
 
@@ -75,6 +77,7 @@ export default function SiteContentForm() {
       instagram: "",
       email: "",
       geminiModel: "models/gemini-1.5-flash",
+      isAiFeatureEnabled: true,
     },
   });
   
@@ -99,7 +102,8 @@ export default function SiteContentForm() {
         twitter: siteContent.socials?.twitter,
         instagram: siteContent.socials?.instagram,
         email: siteContent.socials?.email,
-        geminiModel: siteContent.aiSettings?.geminiModel || 'models/gemini-1.5-flash'
+        geminiModel: siteContent.aiSettings?.geminiModel || 'models/gemini-1.5-flash',
+        isAiFeatureEnabled: siteContent.aiSettings?.isAiFeatureEnabled === undefined ? true : siteContent.aiSettings.isAiFeatureEnabled,
       });
     }
   }, [siteContent, form]);
@@ -146,6 +150,7 @@ export default function SiteContentForm() {
       },
       aiSettings: {
         geminiModel: values.geminiModel,
+        isAiFeatureEnabled: values.isAiFeatureEnabled,
       }
     };
 
@@ -298,8 +303,28 @@ export default function SiteContentForm() {
            <AccordionItem value="ai">
             <AccordionTrigger className="text-xl font-semibold">AI Settings</AccordionTrigger>
             <AccordionContent className="pt-4 space-y-4">
+              <FormField
+                control={form.control}
+                name="isAiFeatureEnabled"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel>Enable AI Features</FormLabel>
+                      <FormDescription>
+                        Enable AI-powered case study generation in the project editor.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
               <FormDescription>
-                Configure the AI model for content generation. The API Key must be set as an environment variable (GEMINI_API_KEY) for security reasons.
+                The API Key must be set as an environment variable (GEMINI_API_KEY) for security reasons.
               </FormDescription>
                <FormField control={form.control} name="geminiModel" render={({ field }) => (
                   <FormItem><FormLabel>Gemini Model Name</FormLabel><FormControl><Input placeholder="models/gemini-1.5-flash" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>

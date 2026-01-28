@@ -95,6 +95,10 @@
             "geminiModel": {
               "type": "string",
               "description": "The Gemini model to use for generation."
+            },
+            "isAiFeatureEnabled": {
+              "type": "boolean",
+              "description": "Determines if AI content generation features are enabled."
             }
           }
         },

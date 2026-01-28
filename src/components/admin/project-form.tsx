@@ -285,26 +285,28 @@ export default function ProjectForm({ project }: { project?: Project }) {
             </AccordionContent>
           </AccordionItem>
           
-          <AccordionItem value="caseStudy">
-            <AccordionTrigger className="text-xl font-semibold">Case Study Details</AccordionTrigger>
-            <AccordionContent className="pt-4 space-y-4">
-                <div className="flex justify-end">
-                    <Button type="button" variant="outline" onClick={handleGenerateAIDetails} disabled={isGenerating || !projectTitle}>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        {isGenerating ? 'Generating...' : 'Generate with AI'}
-                    </Button>
-                </div>
-                <FormField control={form.control} name="problem" render={({ field }) => (
-                    <FormItem><FormLabel>The Problem</FormLabel><FormControl><Textarea className="min-h-24" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="solution" render={({ field }) => (
-                    <FormItem><FormLabel>The Solution</FormLabel><FormControl><Textarea className="min-h-24" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="outcome" render={({ field }) => (
-                    <FormItem><FormLabel>Outcome</FormLabel><FormControl><Textarea className="min-h-24" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-            </AccordionContent>
-          </AccordionItem>
+          {(siteContent?.aiSettings?.isAiFeatureEnabled ?? true) && (
+            <AccordionItem value="caseStudy">
+              <AccordionTrigger className="text-xl font-semibold">Case Study Details</AccordionTrigger>
+              <AccordionContent className="pt-4 space-y-4">
+                  <div className="flex justify-end">
+                      <Button type="button" variant="outline" onClick={handleGenerateAIDetails} disabled={isGenerating || !projectTitle}>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          {isGenerating ? 'Generating...' : 'Generate with AI'}
+                      </Button>
+                  </div>
+                  <FormField control={form.control} name="problem" render={({ field }) => (
+                      <FormItem><FormLabel>The Problem</FormLabel><FormControl><Textarea className="min-h-24" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="solution" render={({ field }) => (
+                      <FormItem><FormLabel>The Solution</FormLabel><FormControl><Textarea className="min-h-24" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="outcome" render={({ field }) => (
+                      <FormItem><FormLabel>Outcome</FormLabel><FormControl><Textarea className="min-h-24" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+              </AccordionContent>
+            </AccordionItem>
+          )}
         </Accordion>
 
         <Button type="submit" disabled={isSaving || isUploading || isGenerating}>
