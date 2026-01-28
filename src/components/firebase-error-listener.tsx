@@ -9,17 +9,11 @@ import { FirestorePermissionError } from '@/firebase/errors';
  * It throws any received error to be caught by Next.js's global-error.tsx.
  */
 export function FirebaseErrorListener() {
-  // Use the specific error type for the state for type safety.
-  
   useEffect(() => {
-    // The callback now expects a strongly-typed error, matching the event payload.
     const handleError = (error: FirestorePermissionError) => {
-      // Set error in state to trigger a re-render.
-      console.error('Firestore Permission Error:', error.request);
-      // In a real app, you might want to log this to a service like Sentry
-      // For this demo, we'll show a toast to the user
-      
-      // Throwing the error will make it visible in the Next.js dev overlay
+      // Throwing the error makes it visible in the Next.js development overlay.
+      // The custom error class formats the message to be informative, so
+      // a separate console.error is not needed.
       throw error;
     };
 
