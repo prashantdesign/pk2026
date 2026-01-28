@@ -1,13 +1,47 @@
-import type { Project, ProjectCategory } from '@/types';
+import type { Project, ProjectCategory, GalleryCategory, GalleryImage, SiteContent } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 
 const now = Timestamp.now();
 
+// --- SITE CONTENT ---
+export const DEMO_SITE_CONTENT: Omit<SiteContent, 'id'> = {
+  siteName: 'PK.Design',
+  heroTitle: 'Creative Graphic, UI & Brand Designer',
+  heroSubtitle: 'I design and build beautiful and functional user experiences. I am passionate about creating digital products that are not only visually appealing but also easy to use.',
+  ctaText: 'View My Work',
+  ctaLink: '#work',
+  aboutText: "Hello! I'm PK, a passionate and detail-oriented designer with a love for creating beautiful, intuitive, and highly-crafted digital experiences. With over 5 years in the field, I specialize in branding, UI/UX, and motion design. My goal is to translate complex problems into simple and elegant solutions. When I'm not designing, you can find me exploring new coffee shops or capturing moments through my camera lens.",
+  aboutImageUrl: 'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwcm9maWxlJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzY5NDk0NzcwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+  stats: [
+    { value: '5+', label: 'Years Experience' },
+    { value: '50+', label: 'Projects Completed' },
+    { value: '100%', label: 'Client Satisfaction' },
+  ],
+  socials: {
+    linkedin: 'https://www.linkedin.com/',
+    twitter: 'https://twitter.com/',
+    instagram: 'https://www.instagram.com/',
+    email: 'hello@pk.design'
+  },
+  theme: 'dark',
+  isMaintenanceModeEnabled: false,
+  areAnimationsEnabled: true,
+  isAboutSectionVisible: true,
+  isStatsSectionVisible: true,
+  isGallerySectionVisible: true,
+  isPortfolioSectionVisible: true,
+  aiSettings: {
+    isAiFeatureEnabled: true,
+    geminiModel: 'models/gemini-1.5-flash',
+  }
+};
+
+// --- PROJECT DATA ---
 export const DEMO_PROJECT_CATEGORIES: Omit<ProjectCategory, 'id'>[] = [
   { name: 'Branding', order: 1 },
   { name: 'UI/UX', order: 2 },
   { name: 'Print Design', order: 3 },
-  { name: 'Motion', order: 4 },
+  { name: 'Motion Graphics', order: 4 },
 ];
 
 export const DEMO_PROJECTS_RAW = [
@@ -31,7 +65,9 @@ export const DEMO_PROJECTS_RAW = [
     description: 'A UI/UX design project for a mobile social media application.',
     categoryName: 'UI/UX',
     imageUrl: 'https://images.unsplash.com/photo-1724862936518-ae7fcfc052c1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzb2NpYWwlMjBtZWRpYXxlbnwwfHx8fDE3Njk0OTY2OTB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    projectImages: [],
+    projectImages: [
+      'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx1aSUyMHdpcmVmcmFtZXxlbnwwfHx8fDE3Njk2NjAxODZ8MA&ixlib=rb-4.1.0&q=80&w=1080'
+    ],
     toolsUsed: 'Figma, Spline',
     order: 2,
     problem: 'Existing social media apps were becoming cluttered and overwhelming for users. There was a need for a simpler, more intuitive interface focused on meaningful connections.',
@@ -61,5 +97,51 @@ export const DEMO_PROJECTS_RAW = [
     problem: 'Financial analysts were struggling with complex, hard-to-navigate software. They needed a dashboard that could present vast amounts of data in a clear, actionable, and customizable way.',
     solution: 'We designed a modular dashboard where users could drag and drop widgets to create their own workspace. Data visualization was a key focus, with interactive charts and graphs that make complex data easy to understand. A dark mode was also implemented to reduce eye strain during long hours of use.',
     outcome: 'The new dashboard design reduced the time to find critical information by 60% and became the platform\'s most praised feature, directly contributing to a higher customer retention rate.',
+  }
+].map(p => ({...p, createdAt: now, updatedAt: now}));
+
+// --- GALLERY DATA ---
+export const DEMO_GALLERY_CATEGORIES: Omit<GalleryCategory, 'id'>[] = [
+  { name: 'Abstract', order: 1 },
+  { name: 'Architecture', order: 2 },
+  { name: 'Nature', order: 3 },
+];
+
+export const DEMO_GALLERY_IMAGES_RAW = [
+  {
+    title: 'Colorful Shapes',
+    imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGFydHxlbnwwfHx8fDE3Njk2NjA1NTB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    categoryName: 'Abstract',
+    order: 1,
+  },
+  {
+    title: 'Geometric Patterns',
+    imageUrl: 'https://images.unsplash.com/photo-1518976029331-2303b38121b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxnZW9tZXRyaWMlMjBwYXR0ZXJufGVufDB8fHx8MTc2OTY2MDU5MHww&ixlib=rb-4.1.0&q=80&w=1080',
+    categoryName: 'Abstract',
+    order: 2,
+  },
+  {
+    title: 'Modern Facade',
+    imageUrl: 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzY5NjYwNjE5fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    categoryName: 'Architecture',
+    order: 3,
+  },
+  {
+    title: 'Misty Forest',
+    imageUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxuYXR1cmUlMjBsYW5kc2NhcGV8ZW58MHx8fHwxNzY5NjYwNjczfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    categoryName: 'Nature',
+    order: 4,
+  },
+   {
+    title: 'Clean Interior',
+    imageUrl: 'https://images.unsplash.com/photo-1616046229478-9901c5536a45?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxpbnRlcmlvciUyMGRlc2lnbnxlbnwwfHx8fDE3Njk2NjA2NDR8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    categoryName: 'Architecture',
+    order: 5,
+  },
+  {
+    title: 'Spring Bloom',
+    imageUrl: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxmbG93ZXJ8ZW58MHx8fHwxNzY5NjYwNjkzfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    categoryName: 'Nature',
+    order: 6,
   }
 ].map(p => ({...p, createdAt: now, updatedAt: now}));
