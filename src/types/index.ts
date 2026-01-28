@@ -1,18 +1,19 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface Project {
   id: string;
   title: string;
-  shortDescription: string;
-  category: string;
-  tags: string[];
-  images: string[];
-  mainImageUrl: string;
-  caseStudy?: {
-    problem: string;
-    solution: string;
-    tools: string;
-    outcome: string;
-  };
+  description: string;
+  categoryId: string;
+  imageUrl: string;
+  projectImages: string[];
+  toolsUsed: string;
   order: number;
+  problem?: string;
+  solution?: string;
+  outcome?: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }
 
 export interface Category {
@@ -23,22 +24,13 @@ export interface Category {
 }
 
 export interface SiteContent {
-  hero: {
-    title: string;
-    subtitle: string;
-    ctaText: string;
-    ctaLink: string;
-    showCta: boolean;
-  };
-  about: {
-    bio: string;
-    aboutImageUrl: string;
-    stats: {
-      projects: number;
-      experience: number;
-    };
-    tools: string[];
-  };
+  id: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  ctaText: string;
+  ctaLink: string;
+  aboutText: string;
+  aboutImageUrl?: string;
   socials?: {
     linkedin?: string;
     twitter?: string;
@@ -52,6 +44,6 @@ export interface ContactMessage {
     name: string;
     email: string;
     message: string;
-    createdAt: any; // Firestore Timestamp
-    read: boolean;
+    timestamp: Timestamp;
+    isRead: boolean;
 }

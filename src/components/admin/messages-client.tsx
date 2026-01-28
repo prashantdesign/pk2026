@@ -25,32 +25,49 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function MessagesClient() {
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const messagesQuery = firestore ? query(collection(firestore, 'messages'), orderBy('createdAt', 'desc')) : null;
-  const { data: messages, loading } = useCollection<ContactMessage>(messagesQuery);
+  const messagesQuery = firestore ? query(collection(firestore, 'contactMessages'), orderBy('timestamp', 'desc')) : null;
+  const { data: messages, isLoading: loading } = useCollection<ContactMessage>(messagesQuery as any);
   
-  const toggleReadStatus = async (id: string, currentStatus: boolean) => {
+  const toggleReadStatus = (id: string, currentStatus: boolean) => {
     if (!firestore) return;
-      try {
-          await updateDoc(doc(firestore, "messages", id), { read: !currentStatus });
-          toast({ title: `Message marked as ${!currentStatus ? 'read' : 'unread'}.` });
-      } catch (error) {
-          toast({ variant: "destructive", title: "Failed to update message status." });
-      }
+    const messageRef = doc(firestore, "contactMessages", id);
+    updateDoc(messageRef, { isRead: !currentStatus })
+      .then(() => {
+        toast({ title: `Message marked as ${!currentStatus ? 'read' : 'unread'}.` });
+      })
+      .catch(async (serverError) => {
+        toast({ variant: "destructive", title: "Failed to update message status." });
+        const permissionError = new FirestorePermissionError({
+          path: messageRef.path,
+          operation: 'update',
+          requestResourceData: { isRead: !currentStatus },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
       if (!firestore || !window.confirm("Are you sure you want to delete this message?")) return;
-      try {
-          await deleteDoc(doc(firestore, "messages", id));
-          toast({ title: "Message deleted successfully." });
-      } catch (error) {
-          toast({ variant: "destructive", title: "Failed to delete message." });
-      }
+      const messageRef = doc(firestore, "contactMessages", id);
+      deleteDoc(messageRef)
+        .then(() => {
+            toast({ title: "Message deleted successfully." });
+        })
+        .catch(async (serverError) => {
+            toast({ variant: "destructive", title: "Failed to delete message." });
+            const permissionError = new FirestorePermissionError({
+              path: messageRef.path,
+              operation: 'delete',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
   }
   
   if (loading) {
@@ -72,16 +89,16 @@ export default function MessagesClient() {
           </TableHeader>
           <TableBody>
             {messages && messages.length > 0 ? messages.map((message) => (
-              <TableRow key={message.id} className={!message.read ? 'font-bold' : ''}>
+              <TableRow key={message.id} className={!message.isRead ? 'font-bold' : ''}>
                 <TableCell>
-                    <Badge variant={message.read ? 'secondary' : 'default'}>{message.read ? 'Read' : 'Unread'}</Badge>
+                    <Badge variant={message.isRead ? 'secondary' : 'default'}>{message.isRead ? 'Read' : 'Unread'}</Badge>
                 </TableCell>
                 <TableCell>
                     <div>{message.name}</div>
                     <div className="text-sm text-muted-foreground">{message.email}</div>
                 </TableCell>
                 <TableCell className="max-w-sm truncate">{message.message}</TableCell>
-                <TableCell>{message.createdAt ? format(message.createdAt.toDate(), 'PP pp') : 'N/A'}</TableCell>
+                <TableCell>{message.timestamp ? format(message.timestamp.toDate(), 'PP pp') : 'N/A'}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -90,9 +107,9 @@ export default function MessagesClient() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => toggleReadStatus(message.id, message.read)}>
-                        {message.read ? <Mail className="mr-2 h-4 w-4" /> : <MailOpen className="mr-2 h-4 w-4" />}
-                         Mark as {message.read ? 'Unread' : 'Read'}
+                      <DropdownMenuItem onClick={() => toggleReadStatus(message.id, message.isRead)}>
+                        {message.isRead ? <Mail className="mr-2 h-4 w-4" /> : <MailOpen className="mr-2 h-4 w-4" />}
+                         Mark as {message.isRead ? 'Unread' : 'Read'}
                       </DropdownMenuItem>
                       <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(message.id)}>
                         <Trash2 className="mr-2 h-4 w-4" /> Delete

@@ -25,6 +25,8 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function ProjectsClient() {
   const router = useRouter();
@@ -32,16 +34,23 @@ export default function ProjectsClient() {
   const firestore = useFirestore();
 
   const projectsQuery = firestore ? query(collection(firestore, 'projects'), orderBy('order', 'asc')) : null;
-  const { data: projects, loading } = useCollection<Project>(projectsQuery);
+  const { data: projects, loading } = useCollection<Project>(projectsQuery as any);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
       if (!firestore || !window.confirm("Are you sure you want to delete this project?")) return;
-      try {
-          await deleteDoc(doc(firestore, "projects", id));
-          toast({ title: "Project deleted successfully." });
-      } catch (error) {
-          toast({ variant: "destructive", title: "Failed to delete project." });
-      }
+      const projectRef = doc(firestore, "projects", id);
+      deleteDoc(projectRef)
+        .then(() => {
+            toast({ title: "Project deleted successfully." });
+        })
+        .catch((serverError) => {
+            toast({ variant: "destructive", title: "Failed to delete project." });
+            const permissionError = new FirestorePermissionError({
+              path: projectRef.path,
+              operation: 'delete',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        });
   }
 
   if (loading) {
@@ -67,7 +76,7 @@ export default function ProjectsClient() {
                     projects.map((project) => (
                         <TableRow key={project.id}>
                         <TableCell className="font-medium">{project.title}</TableCell>
-                        <TableCell>{project.category}</TableCell>
+                        <TableCell>{project.categoryId}</TableCell>
                         <TableCell>{project.order}</TableCell>
                         <TableCell>
                             <DropdownMenu>
