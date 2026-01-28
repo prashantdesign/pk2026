@@ -18,7 +18,7 @@ export default function Home() {
 
   useEffect(() => {
     const handleHashChange = () => {
-      if (window.location.hash === '#admin' || window.location.hash === '#pkadmin') {
+      if (window.location.hash === '#pkadmin') {
         router.push('/login');
       }
     };

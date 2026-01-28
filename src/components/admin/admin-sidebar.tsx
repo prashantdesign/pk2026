@@ -17,6 +17,7 @@ import {
   Palette,
   Briefcase,
   Mails,
+  Settings,
   LogOut,
 } from 'lucide-react';
 import Logo from '@/components/logo';
@@ -51,6 +52,7 @@ const AdminSidebar = () => {
     { href: '/admin/site-content', label: 'Site Content', icon: Palette },
     { href: '/admin/projects', label: 'Projects', icon: Briefcase },
     { href: '/admin/messages', label: 'Messages', icon: Mails },
+    { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
 
   return (
