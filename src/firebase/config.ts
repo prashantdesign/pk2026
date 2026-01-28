@@ -1,11 +1,8 @@
-// IMPORTANT: Your Firebase project configuration is loaded from environment variables.
-// These are set up automatically for your deployed app.
 export const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  "projectId": "studio-3781714673-8a4ee",
+  "appId": "1:1055008786254:web:fb5dd27a20c12ea961801f",
+  "apiKey": "AIzaSyDR-XYYLePh1AwbcU86zUX9hlbx9PhTSuI",
+  "authDomain": "studio-3781714673-8a4ee.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "1055008786254"
 };

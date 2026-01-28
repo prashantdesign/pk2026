@@ -1,89 +1,289 @@
 {
   "entities": {
-    "UserProfile": {
-      "title": "User Profile",
-      "description": "Represents a user's public profile information.",
+    "SiteContent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SiteContent",
       "type": "object",
+      "description": "Stores global site content settings and data.",
       "properties": {
-        "displayName": {
+        "id": {
           "type": "string",
-          "description": "The user's display name."
+          "description": "Unique identifier for the SiteContent entity."
+        },
+        "heroTitle": {
+          "type": "string",
+          "description": "The main title displayed in the hero section."
+        },
+        "heroSubtitle": {
+          "type": "string",
+          "description": "The subtitle displayed in the hero section."
+        },
+        "ctaText": {
+          "type": "string",
+          "description": "The text displayed on the call-to-action button."
+        },
+        "ctaLink": {
+          "type": "string",
+          "description": "The URL that the call-to-action button links to.",
+          "format": "uri"
+        },
+        "aboutText": {
+          "type": "string",
+          "description": "The text displayed in the about section."
+        },
+        "isAboutSectionVisible": {
+          "type": "boolean",
+          "description": "Determines if the about section is visible."
+        },
+        "isStatsSectionVisible": {
+          "type": "boolean",
+          "description": "Determines if the stats section is visible."
+        },
+        "isToolsSectionVisible": {
+          "type": "boolean",
+          "description": "Determines if the tools section is visible."
+        },
+        "siteName": {
+          "type": "string",
+          "description": "The name of the website."
+        },
+        "accentGradientColors": {
+          "type": "array",
+          "description": "An array of color values for the accent gradient.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "areAnimationsEnabled": {
+          "type": "boolean",
+          "description": "Determines if animations are enabled on the site."
+        },
+        "isMaintenanceModeEnabled": {
+          "type": "boolean",
+          "description": "Determines if maintenance mode is enabled."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "Category": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Category",
+      "type": "object",
+      "description": "Represents a category for portfolio projects.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Category entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the category."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the category."
+        },
+        "isVisible": {
+          "type": "boolean",
+          "description": "Determines if the category is visible."
+        },
+        "order": {
+          "type": "number",
+          "description": "The order in which the category is displayed."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Project": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Project",
+      "type": "object",
+      "description": "Represents a portfolio project.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Project entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the project."
+        },
+        "description": {
+          "type": "string",
+          "description": "A short description of the project."
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Reference to Category. (Relationship: Category 1:N Project)"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the project's preview image.",
+          "format": "uri"
+        },
+        "externalLink": {
+          "type": "string",
+          "description": "Optional link to an external website for the project.",
+          "format": "uri"
+        },
+        "isVisible": {
+          "type": "boolean",
+          "description": "Determines if the project is visible."
+        },
+        "order": {
+          "type": "number",
+          "description": "The order in which the project is displayed."
+        },
+        "projectImages": {
+          "type": "array",
+          "description": "Array of image URLs for the project's carousel.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "problem": {
+          "type": "string",
+          "description": "Description of the problem that the project solved."
+        },
+        "solution": {
+          "type": "string",
+          "description": "Description of the solution implemented in the project."
+        },
+        "toolsUsed": {
+          "type": "string",
+          "description": "List of tools used in the project."
+        },
+        "outcome": {
+          "type": "string",
+          "description": "Description of the project's outcome."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "categoryId"
+      ]
+    },
+    "ContactMessage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactMessage",
+      "type": "object",
+      "description": "Represents a message submitted through the contact form.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ContactMessage entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the person who sent the message."
         },
         "email": {
           "type": "string",
-          "format": "email",
-          "description": "The user's email address."
+          "description": "The email address of the person who sent the message.",
+          "format": "email"
         },
-        "photoURL": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL of the user's profile picture."
-        }
-      }
-    },
-    "Project": {
-      "title": "Project",
-      "description": "A portfolio project.",
-      "type": "object",
-      "properties": {
-        "title": { "type": "string" },
-        "shortDescription": { "type": "string" },
-        "category": { "type": "string" },
-        "mainImageUrl": { "type": "string", "format": "uri" },
-        "images": { "type": "array", "items": { "type": "string", "format": "uri" } },
-        "tags": { "type": "array", "items": { "type": "string" } },
-        "order": { "type": "number" },
-        "caseStudy": {
-          "type": "object",
-          "properties": {
-            "problem": { "type": "string" },
-            "solution": { "type": "string" },
-            "tools": { "type": "string" },
-            "outcome": { "type": "string" }
-          }
+        "message": {
+          "type": "string",
+          "description": "The content of the message."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "The date and time when the message was sent.",
+          "format": "date-time"
+        },
+        "isRead": {
+          "type": "boolean",
+          "description": "Indicates if the message has been read."
         }
       },
-      "required": ["title", "shortDescription", "category", "mainImageUrl", "order"]
-    },
-    "Message": {
-      "title": "Message",
-      "description": "A contact message from a visitor.",
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "message": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "read": { "type": "boolean" }
-      },
-      "required": ["name", "email", "message", "createdAt"]
-    },
-    "SiteContent": {
-        "title": "Site Content",
-        "description": "Generic Site Content schema",
-        "type": "object",
-        "properties": {}
+      "required": [
+        "id",
+        "name",
+        "email",
+        "message",
+        "timestamp"
+      ]
     }
   },
   "auth": {
-    "providers": ["password"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": { "$ref": "#/entities/UserProfile" },
-      "description": "Stores public profiles for all users."
-    },
-    "/projects/{projectId}": {
-      "schema": { "$ref": "#/entities/Project" },
-      "description": "Stores individual portfolio projects."
-    },
-    "/messages/{messageId}": {
-      "schema": { "$ref": "#/entities/Message" },
-      "description": "Stores contact messages from site visitors."
-    },
-    "/siteContent/{contentId}": {
-        "schema": { "$ref": "#/entities/SiteContent" },
-        "description": "Stores site content documents like hero, about, theme, etc."
-    }
+    "structure": [
+      {
+        "path": "/siteContent/{siteContentId}",
+        "definition": {
+          "entityName": "SiteContent",
+          "schema": {
+            "$ref": "#/backend/entities/SiteContent"
+          },
+          "description": "Stores global site content settings and data. Only one document will exist in this collection. Document ID will be 'global'.",
+          "params": [
+            {
+              "name": "siteContentId",
+              "description": "The ID of the site content document (should be 'global')."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/categories/{categoryId}",
+        "definition": {
+          "entityName": "Category",
+          "schema": {
+            "$ref": "#/backend/entities/Category"
+          },
+          "description": "Stores portfolio categories.",
+          "params": [
+            {
+              "name": "categoryId",
+              "description": "Unique identifier for the category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}",
+        "definition": {
+          "entityName": "Project",
+          "schema": {
+            "$ref": "#/backend/entities/Project"
+          },
+          "description": "Stores portfolio projects, including a reference to the category ID.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "Unique identifier for the project."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/contactMessages/{messageId}",
+        "definition": {
+          "entityName": "ContactMessage",
+          "schema": {
+            "$ref": "#/backend/entities/ContactMessage"
+          },
+          "description": "Stores contact form submissions.",
+          "params": [
+            {
+              "name": "messageId",
+              "description": "Unique identifier for the contact message."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support a single-page portfolio website with a hidden admin dashboard, focusing on simplicity, security, and real-time updates. It leverages structural segregation and denormalization to ensure authorization independence and efficient data retrieval.\n\n**Authorization Independence (Denormalization):** The structure avoids hierarchical authorization dependencies by storing all authorization-related data directly within each document. For example, the `projects` collection contains `categoryId` which is used for authorization, eliminating the need to fetch parent category data.\n\n**Structural Segregation (Homogeneous Security Posture):** Data with different access needs are stored in separate collections. Public portfolio data (projects, categories, site content) is separated from private contact messages.\n\n**QAPs (Rules are not Filters):** Secure list operations are supported by segregating data into collections with uniform security requirements. Only authenticated admin can view the Contact Messages.\n\n**Access Modeling:**\n*   **Admin Role:** Authenticated admins can manage all content and view contact messages.\n\nThis design ensures clear, maintainable security rules without complex `get()` calls, enabling atomic operations and straightforward debugging."
   }
 }
