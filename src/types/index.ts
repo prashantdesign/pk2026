@@ -25,12 +25,17 @@ export interface Category {
 
 export interface SiteContent {
   id: string;
+  siteName?: string;
   heroTitle: string;
   heroSubtitle: string;
   ctaText: string;
   ctaLink: string;
   aboutText: string;
   aboutImageUrl?: string;
+  stats?: {
+    value: string;
+    label: string;
+  }[];
   socials?: {
     linkedin?: string;
     twitter?: string;

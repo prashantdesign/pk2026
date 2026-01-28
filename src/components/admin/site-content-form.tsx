@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { doc, setDoc } from 'firebase/firestore';
@@ -12,30 +12,36 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '../ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import type { SiteContent } from '@/types';
+import { Trash2 } from 'lucide-react';
 
 const formSchema = z.object({
+  siteName: z.string().optional(),
   heroTitle: z.string().min(1, "Title is required."),
   heroSubtitle: z.string().min(1, "Subtitle is required."),
-  ctaText: z.string(),
-  ctaLink: z.string(),
+  ctaText: z.string().optional(),
+  ctaLink: z.string().optional(),
   
   aboutText: z.string().min(1, "Bio is required."),
+  aboutImageUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   
+  stats: z.array(z.object({
+    label: z.string().min(1, 'Label is required.'),
+    value: z.string().min(1, 'Value is required.'),
+  })).optional(),
+
   theme: z.enum(['light', 'dark']).default('dark'),
 
   linkedin: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   twitter: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   instagram: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   email: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal('')),
-  aboutImageUrl: z.string().url("A valid image URL is required.").optional().or(z.literal('')),
 });
 
 
@@ -51,34 +57,43 @@ export default function SiteContentForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      siteName: "",
       heroTitle: "",
       heroSubtitle: "",
       ctaText: "",
       ctaLink: "",
       aboutText: "",
+      aboutImageUrl: "",
+      stats: [],
       theme: 'dark',
       linkedin: "",
       twitter: "",
       instagram: "",
       email: "",
-      aboutImageUrl: ""
     },
+  });
+  
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "stats",
   });
 
   useEffect(() => {
     if (siteContent) {
       form.reset({
+        siteName: siteContent.siteName || '',
         heroTitle: siteContent.heroTitle,
         heroSubtitle: siteContent.heroSubtitle,
         ctaText: siteContent.ctaText,
         ctaLink: siteContent.ctaLink,
         aboutText: siteContent.aboutText,
-        theme: (siteContent as any).theme || 'dark',
+        aboutImageUrl: siteContent.aboutImageUrl,
+        stats: siteContent.stats,
+        theme: siteContent.theme || 'dark',
         linkedin: siteContent.socials?.linkedin,
         twitter: siteContent.socials?.twitter,
         instagram: siteContent.socials?.instagram,
         email: siteContent.socials?.email,
-        aboutImageUrl: siteContent.aboutImageUrl,
       });
     }
   }, [siteContent, form]);
@@ -108,13 +123,15 @@ export default function SiteContentForm() {
     setIsLoading(true);
 
     const dataToSave = {
+      siteName: values.siteName,
       heroTitle: values.heroTitle,
       heroSubtitle: values.heroSubtitle,
       ctaText: values.ctaText,
       ctaLink: values.ctaLink,
       aboutText: values.aboutText,
-      theme: values.theme,
       aboutImageUrl: values.aboutImageUrl,
+      stats: values.stats,
+      theme: values.theme,
       socials: {
         linkedin: values.linkedin,
         twitter: values.twitter,
@@ -155,10 +172,13 @@ export default function SiteContentForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Accordion type="multiple" defaultValue={['hero', 'about', 'theme', 'socials']} className="w-full">
+        <Accordion type="multiple" defaultValue={['hero', 'about', 'stats', 'theme', 'socials']} className="w-full">
           <AccordionItem value="hero">
             <AccordionTrigger className="text-xl font-semibold">Hero Section</AccordionTrigger>
             <AccordionContent className="pt-4 space-y-4">
+              <FormField control={form.control} name="siteName" render={({ field }) => (
+                  <FormItem><FormLabel>Site Name</FormLabel><FormControl><Input placeholder="PK Design" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
               <FormField control={form.control} name="heroTitle" render={({ field }) => (
                 <FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
               )} />
@@ -166,10 +186,10 @@ export default function SiteContentForm() {
                 <FormItem><FormLabel>Subtitle</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="ctaText" render={({ field }) => (
-                <FormItem><FormLabel>CTA Button Text</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>CTA Button Text</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="ctaLink" render={({ field }) => (
-                <FormItem><FormLabel>CTA Button Link</FormLabel><FormControl><Input {...field} placeholder="#work" /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>CTA Button Link</FormLabel><FormControl><Input {...field} placeholder="#work" value={field.value ?? ''}/></FormControl><FormMessage /></FormItem>
               )} />
             </AccordionContent>
           </AccordionItem>
@@ -180,12 +200,53 @@ export default function SiteContentForm() {
                 <FormItem><FormLabel>Biography</FormLabel><FormControl><Textarea className="min-h-[120px]" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
                <FormField control={form.control} name="aboutImageUrl" render={({ field }) => (
-                <FormItem><FormLabel>Your Picture URL</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Your Picture URL</FormLabel><FormControl><Input placeholder="https://..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
               )} />
               <div>
                 <FormLabel>Or Upload Your Picture</FormLabel>
                 <Input type="file" onChange={handleImageUpload} disabled={isUploading}/>
               </div>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="stats">
+            <AccordionTrigger className="text-xl font-semibold">Stats Section</AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              <FormLabel>Statistics</FormLabel>
+              <FormDescription>Add key metrics to display on your site.</FormDescription>
+              {fields.map((field, index) => (
+                <div key={field.id} className="flex items-end gap-2 p-2 border rounded-lg">
+                  <div className="flex-grow grid grid-cols-2 gap-2">
+                    <FormField
+                      control={form.control}
+                      name={`stats.${index}.value`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Value</FormLabel>
+                          <FormControl><Input placeholder="e.g., 5+" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`stats.${index}.label`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Label</FormLabel>
+                          <FormControl><Input placeholder="e.g., Years Experience" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => append({ label: '', value: '' })}>
+                Add Stat
+              </Button>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="theme">

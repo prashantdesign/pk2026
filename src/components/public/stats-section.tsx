@@ -1,31 +1,35 @@
 'use client';
-
 import React from 'react';
-import { Briefcase, Clock, Users, Award } from 'lucide-react';
+import { SiteContent } from '@/types';
 
-const StatItem = ({ icon: Icon, value, label }: { icon: React.ElementType; value: string; label: string }) => (
-  <div className="flex flex-col items-center text-center">
-    <Icon className="h-10 w-10 text-primary mb-3" />
-    <p className="text-4xl font-bold">{value}</p>
-    <p className="text-muted-foreground">{label}</p>
-  </div>
-);
+interface StatsSectionProps {
+  content?: Partial<SiteContent>;
+}
 
-const StatsSection = () => {
-  // In a real app, this data would likely come from the CMS/Firestore
-  const stats = [
-    { icon: Briefcase, value: '50+', label: 'Projects Completed' },
-    { icon: Clock, value: '5+', label: 'Years of Experience' },
-    { icon: Users, value: '30+', label: 'Happy Clients' },
-    { icon: Award, value: '10', label: 'Awards Won' },
-  ];
+const StatsSection: React.FC<StatsSectionProps> = ({ content }) => {
+    const stats = content?.stats?.length ? content.stats : [
+        { value: '5+', label: 'Years Experience' },
+        { value: '100+', label: 'Projects Done' },
+        { value: '99%', label: 'Happy Clients' },
+    ];
+
+    if (!stats || stats.length === 0) {
+      return null;
+    }
 
   return (
-    <section id="stats" className="py-24 sm:py-32">
+    <section id="stats" className="py-20 lg:py-32 bg-muted/40">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((stat) => (
-            <StatItem key={stat.label} {...stat} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          {stats.map((stat, index) => (
+            <div
+              key={index}
+              className="text-center p-6 bg-card rounded-lg shadow-sm animate-fade-in-up"
+              style={{ animationDelay: `${index * 150}ms` }}
+            >
+              <h3 className="text-5xl font-bold text-primary">{stat.value}</h3>
+              <p className="mt-2 text-muted-foreground">{stat.label}</p>
+            </div>
           ))}
         </div>
       </div>
