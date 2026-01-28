@@ -76,7 +76,7 @@ service cloud.firestore {
      * @path /siteContent/{siteContentId}
      */
     match /siteContent/{siteContentId} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isAdmin();
       allow update, delete: if isAdmin() && isExistingDoc();
     }
@@ -86,7 +86,7 @@ service cloud.firestore {
      * @path /projectCategories/{categoryId}
      */
     match /projectCategories/{categoryId} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isAdmin();
       allow update, delete: if isAdmin() && isExistingDoc();
     }
@@ -96,7 +96,7 @@ service cloud.firestore {
      * @path /galleryCategories/{categoryId}
      */
     match /galleryCategories/{categoryId} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isAdmin();
       allow update, delete: if isAdmin() && isExistingDoc();
     }
@@ -106,7 +106,7 @@ service cloud.firestore {
      * @path /projects/{projectId}
      */
     match /projects/{projectId} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isAdmin();
       allow update, delete: if isAdmin() && isExistingDoc();
     }
@@ -116,7 +116,7 @@ service cloud.firestore {
      * @path /galleryImages/{imageId}
      */
     match /galleryImages/{imageId} {
-      allow get, list: if true;
+      allow read: if true;
       allow create: if isAdmin();
       allow update, delete: if isAdmin() && isExistingDoc();
     }
@@ -126,7 +126,7 @@ service cloud.firestore {
      * @path /contactMessages/{messageId}
      */
     match /contactMessages/{messageId} {
-      allow get, list: if isAdmin();
+      allow read: if isAdmin();
       allow create: if isValidContactMessageCreate();
       allow update, delete: if isAdmin() && isExistingDoc();
     }
