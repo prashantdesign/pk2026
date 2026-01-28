@@ -51,6 +51,9 @@ export interface SiteContent {
     instagram?: string;
     email?: string;
   };
+  aiSettings?: {
+    geminiModel?: string;
+  };
   theme?: 'light' | 'dark';
   isMaintenanceModeEnabled?: boolean;
   areAnimationsEnabled?: boolean;

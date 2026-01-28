@@ -44,6 +44,8 @@ const formSchema = z.object({
   twitter: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   instagram: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   email: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal('')),
+
+  geminiModel: z.string().optional(),
 });
 
 
@@ -72,6 +74,7 @@ export default function SiteContentForm() {
       twitter: "",
       instagram: "",
       email: "",
+      geminiModel: "models/gemini-1.5-flash",
     },
   });
   
@@ -96,6 +99,7 @@ export default function SiteContentForm() {
         twitter: siteContent.socials?.twitter,
         instagram: siteContent.socials?.instagram,
         email: siteContent.socials?.email,
+        geminiModel: siteContent.aiSettings?.geminiModel || 'models/gemini-1.5-flash'
       });
     }
   }, [siteContent, form]);
@@ -139,6 +143,9 @@ export default function SiteContentForm() {
         twitter: values.twitter,
         instagram: values.instagram,
         email: values.email,
+      },
+      aiSettings: {
+        geminiModel: values.geminiModel,
       }
     };
 
@@ -176,7 +183,7 @@ export default function SiteContentForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Accordion type="multiple" defaultValue={['hero', 'about', 'stats', 'theme', 'socials']} className="w-full">
+        <Accordion type="multiple" defaultValue={['hero', 'about', 'stats', 'theme', 'socials', 'ai']} className="w-full">
           <AccordionItem value="hero">
             <AccordionTrigger className="text-xl font-semibold">Hero Section</AccordionTrigger>
             <AccordionContent className="pt-4 space-y-4">
@@ -239,8 +246,8 @@ export default function SiteContentForm() {
                 {aboutImageUrl && (
                   <div className="mt-4">
                     <FormLabel>Image Preview</FormLabel>
-                    <div className="mt-2 relative aspect-square w-48">
-                      <Image src={aboutImageUrl} alt="About Me preview" fill className="rounded-md object-cover" />
+                    <div className="mt-2 relative aspect-square w-48 bg-muted rounded-md">
+                      <Image src={aboutImageUrl} alt="About Me preview" fill className="rounded-md object-contain" />
                     </div>
                   </div>
                 )}
@@ -286,6 +293,17 @@ export default function SiteContentForm() {
               <Button type="button" variant="outline" size="sm" onClick={() => append({ label: '', value: '' })}>
                 Add Stat
               </Button>
+            </AccordionContent>
+          </AccordionItem>
+           <AccordionItem value="ai">
+            <AccordionTrigger className="text-xl font-semibold">AI Settings</AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              <FormDescription>
+                Configure the AI model for content generation. The API Key must be set as an environment variable (GEMINI_API_KEY) for security reasons.
+              </FormDescription>
+               <FormField control={form.control} name="geminiModel" render={({ field }) => (
+                  <FormItem><FormLabel>Gemini Model Name</FormLabel><FormControl><Input placeholder="models/gemini-1.5-flash" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="theme">

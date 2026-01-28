@@ -88,6 +88,16 @@
             "dark"
           ]
         },
+        "aiSettings": {
+          "type": "object",
+          "description": "Settings for Generative AI features.",
+          "properties": {
+            "geminiModel": {
+              "type": "string",
+              "description": "The Gemini model to use for generation."
+            }
+          }
+        },
         "isMaintenanceModeEnabled": {
           "type": "boolean",
           "description": "Determines if maintenance mode is enabled."
@@ -382,4 +392,3 @@
     "reasoning": "The Firestore structure is designed to support a single-page portfolio website with a hidden admin dashboard, focusing on simplicity, security, and real-time updates. It leverages structural segregation and denormalization to ensure authorization independence and efficient data retrieval.\n\n**Authorization Independence (Denormalization):** The structure avoids hierarchical authorization dependencies by storing all authorization-related data directly within each document. For example, the `projects` collection contains `categoryId` which is used for authorization, eliminating the need to fetch parent category data.\n\n**Structural Segregation (Homogeneous Security Posture):** Data with different access needs are stored in separate collections. Public portfolio data (projects, categories, site content) is separated from private contact messages.\n\n**QAPs (Rules are not Filters):** Secure list operations are supported by segregating data into collections with uniform security requirements. Only authenticated admin can view the Contact Messages.\n\n**Access Modeling:**\n*   **Admin Role:** Authenticated admins can manage all content and view contact messages.\n\nThis design ensures clear, maintainable security rules without complex `get()` calls, enabling atomic operations and straightforward debugging."
   }
 }
-    

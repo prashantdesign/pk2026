@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,15 +8,16 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useDoc } from '@/firebase';
+import { generateProjectDetails } from '@/ai/flows/generate-project-details';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { X } from 'lucide-react';
-import type { Project } from '@/types';
+import { X, Sparkles } from 'lucide-react';
+import type { Project, SiteContent } from '@/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -69,6 +70,11 @@ export default function ProjectForm({ project }: { project?: Project }) {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  
+  const siteContentRef = useMemo(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
+  const { data: siteContent } = useDoc<SiteContent>(siteContentRef);
+
 
   const defaultValues: Partial<ProjectFormValues> = {
     title: project?.title || '',
@@ -118,6 +124,36 @@ export default function ProjectForm({ project }: { project?: Project }) {
       }
   }
 
+  const handleGenerateAIDetails = async () => {
+    const title = form.getValues('title');
+    const description = form.getValues('description');
+
+    if (!title) {
+        toast({ variant: 'destructive', title: 'Title is required to generate details.' });
+        return;
+    }
+
+    setIsGenerating(true);
+    toast({ title: 'Generating AI content...', description: 'This may take a moment.'});
+    try {
+        const result = await generateProjectDetails({
+            title,
+            description,
+            modelName: siteContent?.aiSettings?.geminiModel,
+        });
+
+        form.setValue('problem', result.problem);
+        form.setValue('solution', result.solution);
+        form.setValue('outcome', result.outcome);
+        toast({ title: 'Success!', description: 'Case study details have been generated.' });
+    } catch (error: any) {
+        console.error('AI Generation Error:', error);
+        toast({ variant: 'destructive', title: 'AI Generation Failed', description: error.message });
+    } finally {
+        setIsGenerating(false);
+    }
+  }
+
   const onSubmit = (data: ProjectFormValues) => {
     if(!firestore) {
         toast({ variant: "destructive", title: "Firestore not available" });
@@ -136,6 +172,7 @@ export default function ProjectForm({ project }: { project?: Project }) {
   
   const mainImageUrl = form.watch('imageUrl');
   const additionalImages = form.watch('projectImages');
+  const projectTitle = form.watch('title');
 
   return (
     <Form {...form}>
@@ -196,7 +233,7 @@ export default function ProjectForm({ project }: { project?: Project }) {
                 {mainImageUrl && (
                   <div className="mt-4">
                     <FormLabel>Preview</FormLabel>
-                    <div className="mt-2 relative aspect-video w-full max-w-sm">
+                    <div className="mt-2 relative aspect-video w-full max-w-sm bg-muted rounded-md">
                       <Image src={mainImageUrl} alt="Main image preview" fill className="rounded-md object-contain" />
                     </div>
                   </div>
@@ -227,7 +264,7 @@ export default function ProjectForm({ project }: { project?: Project }) {
                     {additionalImages?.[index] && (
                       <div className="mt-4">
                         <FormLabel>Preview</FormLabel>
-                        <div className="mt-2 relative aspect-video w-full max-w-xs">
+                        <div className="mt-2 relative aspect-video w-full max-w-xs bg-muted rounded-md">
                           <Image src={additionalImages[index]} alt={`Preview ${index + 1}`} fill className="rounded-md object-contain" />
                         </div>
                       </div>
@@ -240,7 +277,7 @@ export default function ProjectForm({ project }: { project?: Project }) {
                   </Button>
                   <div className="flex-grow">
                     <FormLabel className="text-sm font-normal">Or upload to add</FormLabel>
-                    <Input type="file" onChange={(e) => handleImageUpload(e, 'projectImages')} disabled={isUploading} />
+                    <Input type="file" onChange={(e) => handleImageUpload(e, 'projectImages')} disabled={isUploading || isGenerating} />
                     {isUploading && <p className="text-sm text-muted-foreground mt-1">Uploading...</p>}
                   </div>
                 </div>
@@ -251,20 +288,26 @@ export default function ProjectForm({ project }: { project?: Project }) {
           <AccordionItem value="caseStudy">
             <AccordionTrigger className="text-xl font-semibold">Case Study Details</AccordionTrigger>
             <AccordionContent className="pt-4 space-y-4">
+                <div className="flex justify-end">
+                    <Button type="button" variant="outline" onClick={handleGenerateAIDetails} disabled={isGenerating || !projectTitle}>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        {isGenerating ? 'Generating...' : 'Generate with AI'}
+                    </Button>
+                </div>
                 <FormField control={form.control} name="problem" render={({ field }) => (
-                    <FormItem><FormLabel>The Problem</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>The Problem</FormLabel><FormControl><Textarea className="min-h-24" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="solution" render={({ field }) => (
-                    <FormItem><FormLabel>The Solution</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>The Solution</FormLabel><FormControl><Textarea className="min-h-24" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="outcome" render={({ field }) => (
-                    <FormItem><FormLabel>Outcome</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Outcome</FormLabel><FormControl><Textarea className="min-h-24" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
 
-        <Button type="submit" disabled={isSaving || isUploading}>
+        <Button type="submit" disabled={isSaving || isUploading || isGenerating}>
           {isSaving ? 'Saving...' : 'Save Project'}
         </Button>
       </form>
