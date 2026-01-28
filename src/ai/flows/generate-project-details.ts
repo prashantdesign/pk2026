@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { model as googleAIModel } from '@genkit-ai/google-genai';
+import { googleAI } from '@genkit-ai/google-genai';
 
 // Define the input schema for the AI flow
 const GenerateProjectDetailsInputSchema = z.object({
@@ -52,7 +52,7 @@ const generateProjectDetailsFlow = ai.defineFlow(
   },
   async ({ title, description, modelName }) => {
     // Select the specified model, or default to gemini-1.5-flash-latest
-    const model = googleAIModel(modelName || 'gemini-1.5-flash-latest');
+    const model = googleAI.model(modelName || 'gemini-1.5-flash-latest');
     
     // Call the AI model with the defined prompt and input
     const { output } = await projectDetailsPrompt({ input: { title, description }, model });
