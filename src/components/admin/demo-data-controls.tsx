@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, writeBatch, getDocs } from 'firebase/firestore';
+import { collection, writeBatch, getDocs, doc } from 'firebase/firestore';
 import { DEMO_PROJECTS } from '@/lib/demo-data';
 import PasswordPromptDialog from './password-prompt-dialog';
 
@@ -26,9 +26,8 @@ export default function DemoDataControls() {
       const projectsCollection = collection(firestore, 'projects');
       
       DEMO_PROJECTS.forEach(project => {
-        const docRef = project.id ? collection(projectsCollection).doc(project.id) : collection(projectsCollection).doc();
-        // The project type from demo data might not have createdAt/updatedAt, so we cast to any
-        batch.set(docRef, project as any);
+        const docRef = doc(projectsCollection);
+        batch.set(docRef, project);
       });
 
       await batch.commit();
