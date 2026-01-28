@@ -4,15 +4,16 @@
  *
  * Core Philosophy:
  * This ruleset implements a dual-access security model:
- * 1. Public-Read: Core portfolio content (site settings, categories, projects) is publicly readable by any visitor, including unauthenticated ones.
+ * 1. Public-Read: Core portfolio content (site settings, categories, projects, gallery) is publicly readable by any visitor, including unauthenticated ones.
  * 2. Admin-Only Write: All content creation, modification, and deletion are restricted to authenticated administrators. For prototyping, any non-anonymous authenticated user is considered an admin.
  * 3. Private Data "Dropbox": A dedicated collection for contact messages allows any user to submit (create) a message, but only admins can read or manage them.
  *
  * Data Structure:
- * The data is organized into four distinct, top-level collections to enforce a clear separation of security concerns (Structural Segregation):
+ * The data is organized into distinct, top-level collections to enforce a clear separation of security concerns (Structural Segregation):
  * - /siteContent: Singleton collection for global website configuration.
  * - /categories: Defines categories for portfolio projects.
  * - /projects: Contains the individual portfolio projects.
+ * - /galleryImages: Stores images for the public gallery.
  * - /contactMessages: A private collection to store user-submitted contact form messages.
  *
  * Key Security Decisions:
@@ -107,6 +108,19 @@ service cloud.firestore {
       allow create: if isAdmin();
       allow update, delete: if isAdmin() && isExistingDoc();
     }
+    
+    /**
+     * @description Manages gallery images. Publicly readable, but only admins can manage them.
+     * @path /galleryImages/{imageId}
+     * @allow (get) Any user can view the details of a specific gallery image.
+     * @deny (delete) A public visitor attempts to delete an image.
+     * @principle Public read access for portfolio content, with writes restricted to administrators.
+     */
+    match /galleryImages/{imageId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin() && isExistingDoc();
+    }
 
     /**
      * @description A "dropbox" for contact form submissions. Anyone can create, but only admins can read/manage.
@@ -122,3 +136,4 @@ service cloud.firestore {
     }
   }
 }
+    

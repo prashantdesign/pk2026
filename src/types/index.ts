@@ -16,6 +16,15 @@ export interface Project {
   updatedAt?: Timestamp;
 }
 
+export interface GalleryImage {
+  id: string;
+  title: string;
+  imageUrl: string;
+  order: number;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
 export interface Category {
   id: string;
   name: string;
@@ -47,6 +56,7 @@ export interface SiteContent {
   areAnimationsEnabled?: boolean;
   isAboutSectionVisible?: boolean;
   isStatsSectionVisible?: boolean;
+  isGallerySectionVisible?: boolean;
   isPortfolioSectionVisible?: boolean;
 }
 
@@ -58,3 +68,5 @@ export interface ContactMessage {
     timestamp: Timestamp;
     isRead: boolean;
 }
+
+    

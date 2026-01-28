@@ -21,6 +21,7 @@ const formSchema = z.object({
   areAnimationsEnabled: z.boolean().default(true),
   isAboutSectionVisible: z.boolean().default(true),
   isStatsSectionVisible: z.boolean().default(true),
+  isGallerySectionVisible: z.boolean().default(true),
   isPortfolioSectionVisible: z.boolean().default(true),
 });
 
@@ -39,6 +40,7 @@ export default function SettingsForm() {
       areAnimationsEnabled: true,
       isAboutSectionVisible: true,
       isStatsSectionVisible: true,
+      isGallerySectionVisible: true,
       isPortfolioSectionVisible: true,
     },
   });
@@ -50,6 +52,7 @@ export default function SettingsForm() {
         areAnimationsEnabled: siteContent.areAnimationsEnabled === undefined ? true : siteContent.areAnimationsEnabled,
         isAboutSectionVisible: siteContent.isAboutSectionVisible === undefined ? true : siteContent.isAboutSectionVisible,
         isStatsSectionVisible: siteContent.isStatsSectionVisible === undefined ? true : siteContent.isStatsSectionVisible,
+        isGallerySectionVisible: siteContent.isGallerySectionVisible === undefined ? true : siteContent.isGallerySectionVisible,
         isPortfolioSectionVisible: siteContent.isPortfolioSectionVisible === undefined ? true : siteContent.isPortfolioSectionVisible,
       });
     }
@@ -174,6 +177,26 @@ export default function SettingsForm() {
             />
             <FormField
               control={form.control}
+              name="isGallerySectionVisible"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel>Show Gallery Section</FormLabel>
+                     <FormDescription>
+                       Control the visibility of the image gallery section.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="isPortfolioSectionVisible"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
@@ -198,3 +221,5 @@ export default function SettingsForm() {
     </Form>
   );
 }
+
+    

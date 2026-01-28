@@ -14,6 +14,7 @@ import ContactSection from '@/components/public/contact-section';
 import Footer from '@/components/public/footer';
 import ProjectModal from '@/components/public/project-modal';
 import StatsSection from '@/components/public/stats-section';
+import GallerySection from '@/components/public/gallery-section';
 
 export default function Home() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -73,6 +74,7 @@ export default function Home() {
         <HeroSection content={siteContent} />
         {(siteContent?.isAboutSectionVisible ?? true) && <AboutSection content={siteContent} />}
         {(siteContent?.isStatsSectionVisible ?? true) && <StatsSection content={siteContent} />}
+        {(siteContent?.isGallerySectionVisible ?? true) && <GallerySection />}
         {(siteContent?.isPortfolioSectionVisible ?? true) && <PortfolioSection onProjectClick={handleProjectClick} />}
         <ContactSection />
       </main>
@@ -87,3 +89,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

@@ -104,6 +104,10 @@
           "type": "boolean",
           "description": "Determines if the stats section is visible."
         },
+        "isGallerySectionVisible": {
+          "type": "boolean",
+          "description": "Determines if the gallery section is visible."
+        },
         "isPortfolioSectionVisible": {
           "type": "boolean",
           "description": "Determines if the portfolio section is visible."
@@ -255,6 +259,36 @@
         "message",
         "timestamp"
       ]
+    },
+    "GalleryImage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GalleryImage",
+      "type": "object",
+      "description": "Represents an image in the portfolio gallery.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the GalleryImage entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "A brief title or description for the image."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the gallery image.",
+          "format": "uri"
+        },
+        "order": {
+          "type": "number",
+          "description": "The display order of the image in the gallery."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "imageUrl"
+      ]
     }
   },
   "auth": {
@@ -327,8 +361,25 @@
             }
           ]
         }
+      },
+      {
+        "path": "/galleryImages/{imageId}",
+        "definition": {
+          "entityName": "GalleryImage",
+          "schema": {
+            "$ref": "#/backend/entities/GalleryImage"
+          },
+          "description": "Stores images for the public gallery.",
+          "params": [
+            {
+              "name": "imageId",
+              "description": "Unique identifier for the gallery image."
+            }
+          ]
+        }
       }
     ],
     "reasoning": "The Firestore structure is designed to support a single-page portfolio website with a hidden admin dashboard, focusing on simplicity, security, and real-time updates. It leverages structural segregation and denormalization to ensure authorization independence and efficient data retrieval.\n\n**Authorization Independence (Denormalization):** The structure avoids hierarchical authorization dependencies by storing all authorization-related data directly within each document. For example, the `projects` collection contains `categoryId` which is used for authorization, eliminating the need to fetch parent category data.\n\n**Structural Segregation (Homogeneous Security Posture):** Data with different access needs are stored in separate collections. Public portfolio data (projects, categories, site content) is separated from private contact messages.\n\n**QAPs (Rules are not Filters):** Secure list operations are supported by segregating data into collections with uniform security requirements. Only authenticated admin can view the Contact Messages.\n\n**Access Modeling:**\n*   **Admin Role:** Authenticated admins can manage all content and view contact messages.\n\nThis design ensures clear, maintainable security rules without complex `get()` calls, enabling atomic operations and straightforward debugging."
   }
 }
+    
