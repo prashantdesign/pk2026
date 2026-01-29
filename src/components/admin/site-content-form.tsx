@@ -7,7 +7,7 @@ import * as z from 'zod';
 import { doc, setDoc } from 'firebase/firestore';
 import { useFirestore, useDoc } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -113,16 +113,13 @@ export default function SiteContentForm() {
       if (!file) return;
 
       setIsUploading(true);
-      const storage = getStorage();
-      const storageRef = ref(storage, `siteContent/${Date.now()}_${file.name}`);
-
       try {
-          const snapshot = await uploadBytes(storageRef, file);
-          const downloadURL = await getDownloadURL(snapshot.ref);
+          const downloadURL = await uploadToCloudinary(file);
           form.setValue('aboutImageUrl', downloadURL, { shouldValidate: true });
           toast({title: "Image uploaded successfully"});
-      } catch (error) {
-          toast({variant: "destructive", title: "Image upload failed"});
+      } catch (error: any) {
+          toast({variant: "destructive", title: "Image upload failed", description: error.message});
+          console.error("Cloudinary upload error: ", error);
       } finally {
           setIsUploading(false);
       }

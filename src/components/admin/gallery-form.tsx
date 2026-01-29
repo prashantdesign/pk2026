@@ -6,9 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, addDoc, collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useFirestore, useCollection } from '@/firebase';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,17 +85,13 @@ export default function GalleryForm({ image }: { image?: GalleryImage }) {
       if (!file) return;
 
       setIsUploading(true);
-      const storage = getStorage();
-      const storageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
-
       try {
-          const snapshot = await uploadBytes(storageRef, file);
-          const downloadURL = await getDownloadURL(snapshot.ref);
+          const downloadURL = await uploadToCloudinary(file);
           form.setValue('imageUrl', downloadURL, { shouldValidate: true });
           toast({title: "Image uploaded successfully"});
-      } catch (error) {
-          toast({variant: "destructive", title: "Image upload failed"});
-          console.error("Image upload error: ", error);
+      } catch (error: any) {
+          toast({variant: "destructive", title: "Image upload failed", description: error.message});
+          console.error("Cloudinary upload error: ", error);
       } finally {
           setIsUploading(false);
       }

@@ -6,10 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, addDoc, collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useFirestore, useDoc, useCollection } from '@/firebase';
 import { generateProjectDetails } from '@/ai/flows/generate-project-details';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,12 +111,8 @@ export default function ProjectForm({ project }: { project?: Project }) {
       if (!file) return;
 
       setIsUploading(true);
-      const storage = getStorage();
-      const storageRef = ref(storage, `projects/${Date.now()}_${file.name}`);
-
       try {
-          const snapshot = await uploadBytes(storageRef, file);
-          const downloadURL = await getDownloadURL(snapshot.ref);
+          const downloadURL = await uploadToCloudinary(file);
           
           if (fieldName === 'imageUrl') {
               form.setValue('imageUrl', downloadURL, { shouldValidate: true });
@@ -124,8 +120,9 @@ export default function ProjectForm({ project }: { project?: Project }) {
               append(downloadURL);
           }
           toast({title: "Image uploaded successfully"});
-      } catch (error) {
-          toast({variant: "destructive", title: "Image upload failed"});
+      } catch (error: any) {
+          toast({variant: "destructive", title: "Image upload failed", description: error.message});
+          console.error("Cloudinary upload error: ", error);
       } finally {
           setIsUploading(false);
       }
