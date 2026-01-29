@@ -2,27 +2,29 @@
 import React from 'react';
 import type { SiteContent } from '@/types';
 import { Linkedin, Twitter, Instagram, Mail } from 'lucide-react';
-import Logo from '@/components/logo';
+import Logo from '../logo';
 
-interface FooterProps {
-    content?: SiteContent | null;
-}
+const Footer = ({ content }: { content: SiteContent | null }) => {
+  const socialLinks = content?.socials;
 
-export default function Footer({ content }: FooterProps) {
+  const hasSocials = socialLinks && (socialLinks.linkedin || socialLinks.twitter || socialLinks.instagram || socialLinks.email);
+
   return (
-    <footer className="bg-background border-t">
-        <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                <Logo />
-                 <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} {content?.siteName || "PK.Design"}. All Rights Reserved.</p>
-                <div className="flex gap-4 items-center">
-                    {content?.socials?.twitter && <a href={content.socials.twitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Twitter size={20} /></a>}
-                    {content?.socials?.linkedin && <a href={content.socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Linkedin size={20} /></a>}
-                    {content?.socials?.instagram && <a href={content.socials.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Instagram size={20} /></a>}
-                    {content?.socials?.email && <a href={`mailto:${content.socials.email}`} className="text-muted-foreground hover:text-primary"><Mail size={20} /></a>}
-                </div>
+    <footer className="border-t">
+      <div className="container mx-auto px-4 md:px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <Logo />
+        {hasSocials && (
+            <div className="flex items-center gap-4">
+            {socialLinks?.linkedin && <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-muted-foreground hover:text-primary"><Linkedin /></a>}
+            {socialLinks?.twitter && <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-muted-foreground hover:text-primary"><Twitter /></a>}
+            {socialLinks?.instagram && <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-primary"><Instagram /></a>}
+            {socialLinks?.email && <a href={`mailto:${socialLinks.email}`} aria-label="Email" className="text-muted-foreground hover:text-primary"><Mail /></a>}
             </div>
-        </div>
+        )}
+        <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} {content?.siteName || 'PK Design'}. All Rights Reserved.</p>
+      </div>
     </footer>
   );
-}
+};
+
+export default Footer;

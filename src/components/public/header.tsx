@@ -1,23 +1,75 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
 import Logo from '@/components/logo';
 
-interface HeaderProps {
-  siteName?: string | null;
-}
+const Header = ({ siteName }: { siteName?: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-export default function Header({ siteName }: HeaderProps) {
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navItems = [
+    { label: 'About', href: '#about' },
+    { label: 'Work', href: '#work' },
+    { label: 'Gallery', href: '#gallery' },
+    { label: 'Contact', href: '#contact' },
+  ];
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-sm">
-      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-        <Logo />
-        <nav className="hidden md:flex gap-6 items-center">
-            <a href="#about" className="text-sm font-medium hover:text-primary transition-colors">About</a>
-            <a href="#work" className="text-sm font-medium hover:text-primary transition-colors">Work</a>
-            <a href="#gallery" className="text-sm font-medium hover:text-primary transition-colors">Gallery</a>
-            <a href="#contact" className="text-sm font-medium hover:text-primary transition-colors">Contact</a>
+    <header
+      className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+        isScrolled ? 'bg-background/80 backdrop-blur-sm shadow-md' : 'bg-transparent'
+      }`}
+    >
+      <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-6">
+        <a href="#" className="flex items-center">
+          <Logo />
+        </a>
+        <nav className="hidden items-center gap-6 md:flex">
+          {navItems.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              className="text-sm font-medium transition-colors hover:text-primary"
+              onClick={() => setIsOpen(false)}
+            >
+              {item.label}
+            </a>
+          ))}
         </nav>
+        <button
+          className="md:hidden"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label="Toggle menu"
+        >
+          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
       </div>
+      {isOpen && (
+        <div className="md:hidden">
+          <nav className="flex flex-col items-center gap-4 bg-background p-4">
+            {navItems.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="text-lg font-medium transition-colors hover:text-primary"
+                onClick={() => setIsOpen(false)}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      )}
     </header>
   );
-}
+};
+
+export default Header;

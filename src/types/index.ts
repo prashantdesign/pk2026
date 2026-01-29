@@ -78,5 +78,3 @@ export interface ContactMessage {
     timestamp: Timestamp;
     isRead: boolean;
 }
-
-    
