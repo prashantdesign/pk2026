@@ -1,29 +1,21 @@
 'use client';
 
 export const uploadToCloudinary = async (file: File): Promise<string> => {
-  // 1. Get signature from our API
-  const signatureResponse = await fetch('/api/sign-image', {
-      method: 'POST',
-  });
-
-  if (!signatureResponse.ok) {
-    throw new Error('Failed to get upload signature from the server.');
-  }
-
-  const { signature, timestamp } = await signatureResponse.json();
-
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset || cloudName === '<Your Cloud Name>') {
+    const errorMessage = 'Cloudinary configuration is missing. Please set your Cloud Name in the .env file and ensure you have an upload preset configured in your Cloudinary account.';
+    console.error(errorMessage);
+    throw new Error(errorMessage);
+  }
   
-  // 2. Prepare form data for Cloudinary
+  // Prepare form data for Cloudinary
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('api_key', apiKey!);
-  formData.append('timestamp', timestamp);
-  formData.append('signature', signature);
-  formData.append('folder', 'portfolio-uploads'); // Must match the folder signed on the server
+  formData.append('upload_preset', uploadPreset);
 
-  // 3. Upload to Cloudinary
+  // Upload to Cloudinary
   const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
   
   const uploadResponse = await fetch(uploadUrl, {
