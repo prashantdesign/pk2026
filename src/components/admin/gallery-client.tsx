@@ -24,7 +24,7 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -63,67 +63,112 @@ export default function GalleryClient() {
   }
 
   return (
-    <Card>
-        <CardContent>
-            <Table>
-            <TableHeader>
-                <TableRow>
-                <TableHead>Image</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead>
-                    <span className="sr-only">Actions</span>
-                </TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {images && images.length > 0 ? (
-                    images.map((image) => (
-                        <TableRow key={image.id}>
-                        <TableCell>
-                            <Image
+    <>
+        {/* Mobile View */}
+        <div className="grid gap-4 md:hidden">
+            {images && images.length > 0 ? (
+                images.map((image) => (
+                    <Card key={image.id}>
+                        <CardHeader className="p-0">
+                             <Image
                                 src={image.imageUrl}
                                 alt={image.title}
-                                width={80}
-                                height={80}
-                                className="rounded-md object-cover"
+                                width={400}
+                                height={300}
+                                className="rounded-t-lg object-cover aspect-video"
                             />
-                        </TableCell>
-                        <TableCell className="font-medium">{image.title}</TableCell>
-                        <TableCell>{image.order}</TableCell>
-                        <TableCell>
+                        </CardHeader>
+                        <CardContent className="p-4">
+                            <p className="font-medium">{image.title}</p>
+                            <p className="text-sm text-muted-foreground">Order: {image.order}</p>
+                        </CardContent>
+                        <CardFooter className="flex justify-end p-4 pt-0">
                             <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => router.push(`/admin/gallery/edit/${image.id}`)}>
-                                    <Pencil className="mr-2 h-4 w-4" /> Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(image.id)}>
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
+                                <DropdownMenuTrigger asChild>
+                                    <Button size="icon" variant="ghost">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => router.push(`/admin/gallery/edit/${image.id}`)}>
+                                        <Pencil className="mr-2 h-4 w-4" /> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(image.id)}>
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
                             </DropdownMenu>
-                        </TableCell>
-                        </TableRow>
-                    ))
-                ) : (
+                        </CardFooter>
+                    </Card>
+                ))
+            ) : (
+                 <div className="text-center text-muted-foreground py-12 col-span-full">
+                    No images found in gallery.
+                </div>
+            )}
+        </div>
+
+        {/* Desktop View */}
+        <Card className="hidden md:block">
+            <CardContent>
+                <Table>
+                <TableHeader>
                     <TableRow>
-                        <TableCell colSpan={4} className="h-24 text-center">
-                            No images found in gallery.
-                        </TableCell>
+                    <TableHead>Image</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Order</TableHead>
+                    <TableHead>
+                        <span className="sr-only">Actions</span>
+                    </TableHead>
                     </TableRow>
-                )}
-            </TableBody>
-            </Table>
-        </CardContent>
-    </Card>
+                </TableHeader>
+                <TableBody>
+                    {images && images.length > 0 ? (
+                        images.map((image) => (
+                            <TableRow key={image.id}>
+                            <TableCell>
+                                <Image
+                                    src={image.imageUrl}
+                                    alt={image.title}
+                                    width={80}
+                                    height={80}
+                                    className="rounded-md object-cover"
+                                />
+                            </TableCell>
+                            <TableCell className="font-medium">{image.title}</TableCell>
+                            <TableCell>{image.order}</TableCell>
+                            <TableCell>
+                                <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => router.push(`/admin/gallery/edit/${image.id}`)}>
+                                        <Pencil className="mr-2 h-4 w-4" /> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(image.id)}>
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={4} className="h-24 text-center">
+                                No images found in gallery.
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    </>
   );
 }
-
-    

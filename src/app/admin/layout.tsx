@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AdminSidebar from '@/components/admin/admin-sidebar';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -26,8 +26,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <AdminSidebar />
-      <main className="flex-1 flex-col bg-muted/40 p-4 md:p-8 overflow-y-auto">
-        {children}
+      <main className="flex flex-1 flex-col">
+        <header className="flex h-14 shrink-0 items-center justify-end border-b bg-background px-4 md:hidden">
+            <SidebarTrigger />
+        </header>
+        <div className="flex-1 overflow-y-auto bg-muted/40 p-4 md:p-8">
+          {children}
+        </div>
       </main>
     </SidebarProvider>
   );

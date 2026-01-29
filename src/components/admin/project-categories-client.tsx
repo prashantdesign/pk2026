@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -62,55 +62,95 @@ export default function ProjectCategoriesClient() {
   }
 
   return (
-    <Card>
-        <CardContent>
-            <Table>
-            <TableHeader>
-                <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead>
-                    <span className="sr-only">Actions</span>
-                </TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {categories && categories.length > 0 ? (
-                    categories.map((category) => (
-                        <TableRow key={category.id}>
-                        <TableCell className="font-medium">{category.name}</TableCell>
-                        <TableCell>{category.order}</TableCell>
-                        <TableCell>
+    <>
+        {/* Mobile View */}
+        <div className="grid gap-4 md:hidden">
+            {categories && categories.length > 0 ? (
+                categories.map((category) => (
+                    <Card key={category.id}>
+                        <CardHeader>
+                            <CardTitle>{category.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-sm text-muted-foreground">Order: {category.order}</div>
+                        </CardContent>
+                        <CardFooter className="flex justify-end">
                             <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => router.push(`/admin/project-categories/edit/${category.id}`)}>
-                                    <Pencil className="mr-2 h-4 w-4" /> Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(category.id)}>
-                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
+                                <DropdownMenuTrigger asChild>
+                                    <Button size="icon" variant="ghost">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => router.push(`/admin/project-categories/edit/${category.id}`)}>
+                                        <Pencil className="mr-2 h-4 w-4" /> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(category.id)}>
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
                             </DropdownMenu>
-                        </TableCell>
-                        </TableRow>
-                    ))
-                ) : (
+                        </CardFooter>
+                    </Card>
+                ))
+            ) : (
+                <div className="text-center text-muted-foreground py-12 col-span-full">
+                    No project categories found.
+                </div>
+            )}
+        </div>
+
+        {/* Desktop View */}
+        <Card className="hidden md:block">
+            <CardContent>
+                <Table>
+                <TableHeader>
                     <TableRow>
-                        <TableCell colSpan={3} className="h-24 text-center">
-                            No project categories found.
-                        </TableCell>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Order</TableHead>
+                    <TableHead>
+                        <span className="sr-only">Actions</span>
+                    </TableHead>
                     </TableRow>
-                )}
-            </TableBody>
-            </Table>
-        </CardContent>
-    </Card>
+                </TableHeader>
+                <TableBody>
+                    {categories && categories.length > 0 ? (
+                        categories.map((category) => (
+                            <TableRow key={category.id}>
+                            <TableCell className="font-medium">{category.name}</TableCell>
+                            <TableCell>{category.order}</TableCell>
+                            <TableCell>
+                                <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => router.push(`/admin/project-categories/edit/${category.id}`)}>
+                                        <Pencil className="mr-2 h-4 w-4" /> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-red-500" onClick={() => handleDelete(category.id)}>
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                            <TableCell colSpan={3} className="h-24 text-center">
+                                No project categories found.
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    </>
   );
 }
