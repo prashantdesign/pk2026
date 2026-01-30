@@ -1,17 +1,16 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
-import { submitContactForm } from '@/lib/actions';
+import React, { useEffect, useRef } from 'react';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
+import { submitContactForm, type FormState } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
-const initialState = {
+const initialState: FormState = {
   message: '',
   error: false,
 };
@@ -26,51 +25,54 @@ function SubmitButton() {
 }
 
 export default function ContactSection() {
-  const [state, formAction] = useFormState(submitContactForm, initialState);
+  const [state, formAction] = useActionState(submitContactForm, initialState);
   const { toast } = useToast();
-  const formRef = React.useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state.message) {
-      toast({
-        title: state.error ? 'Oops!' : 'Success!',
-        description: state.message,
-        variant: state.error ? 'destructive' : 'default',
-      });
-      if (!state.error) {
+      if (state.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: state.message,
+        });
+      } else {
+        toast({
+          title: 'Success!',
+          description: state.message,
+        });
         formRef.current?.reset();
       }
     }
   }, [state, toast]);
 
   return (
-    <section id="contact" className="py-20 md:py-32">
+    <section id="contact" className="py-16 md:py-24 bg-secondary">
       <div className="container mx-auto px-4">
-        <Card className="max-w-xl mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl">Get in Touch</CardTitle>
-            <CardDescription>
-              Have a project in mind or just want to say hi? Fill out the form below.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form ref={formRef} action={formAction} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" name="name" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
-                <Textarea id="message" name="message" required />
-              </div>
-              <SubmitButton />
-            </form>
-          </CardContent>
-        </Card>
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Get in Touch</h2>
+          <p className="text-muted-foreground mb-8">
+            Have a project in mind or just want to say hello? Drop me a line.
+          </p>
+        </div>
+        <div className="max-w-xl mx-auto p-8 border rounded-lg bg-card text-card-foreground">
+          <form ref={formRef} action={formAction} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" name="name" type="text" placeholder="Your Name" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" name="email" type="email" placeholder="your.email@example.com" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="message">Message</Label>
+              <Textarea id="message" name="message" placeholder="Your message..." className="min-h-[120px]" required />
+            </div>
+            <SubmitButton />
+          </form>
+        </div>
       </div>
     </section>
   );
