@@ -76,9 +76,8 @@ service cloud.firestore {
      * @path /siteContent/{siteContentId}
      */
     match /siteContent/{siteContentId} {
-      allow read: if true;
-      allow create: if isAdmin();
-      allow update, delete: if isAdmin() && isExistingDoc();
+      allow get, list: if true;
+      allow write: if isAdmin();
     }
 
     /**
@@ -86,9 +85,8 @@ service cloud.firestore {
      * @path /projectCategories/{categoryId}
      */
     match /projectCategories/{categoryId} {
-      allow read: if true;
-      allow create: if isAdmin();
-      allow update, delete: if isAdmin() && isExistingDoc();
+      allow get, list: if true;
+      allow write: if isAdmin();
     }
 
     /**
@@ -96,9 +94,8 @@ service cloud.firestore {
      * @path /galleryCategories/{categoryId}
      */
     match /galleryCategories/{categoryId} {
-      allow read: if true;
-      allow create: if isAdmin();
-      allow update, delete: if isAdmin() && isExistingDoc();
+      allow get, list: if true;
+      allow write: if isAdmin();
     }
     
     /**
@@ -106,9 +103,8 @@ service cloud.firestore {
      * @path /projects/{projectId}
      */
     match /projects/{projectId} {
-      allow read: if true;
-      allow create: if isAdmin();
-      allow update, delete: if isAdmin() && isExistingDoc();
+      allow get, list: if true;
+      allow write: if isAdmin();
     }
     
     /**
@@ -116,9 +112,8 @@ service cloud.firestore {
      * @path /galleryImages/{imageId}
      */
     match /galleryImages/{imageId} {
-      allow read: if true;
-      allow create: if isAdmin();
-      allow update, delete: if isAdmin() && isExistingDoc();
+      allow get, list: if true;
+      allow write: if isAdmin();
     }
 
     /**
