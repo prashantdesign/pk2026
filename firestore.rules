@@ -76,7 +76,7 @@ service cloud.firestore {
      * @path /siteContent/{siteContentId}
      */
     match /siteContent/{siteContentId} {
-      allow get, list: if request.auth == null || request.auth != null;
+      allow read: if request.auth == null || request.auth != null;
       allow write: if isAdmin();
     }
 
@@ -85,7 +85,7 @@ service cloud.firestore {
      * @path /projectCategories/{categoryId}
      */
     match /projectCategories/{categoryId} {
-      allow get, list: if request.auth == null || request.auth != null;
+      allow read: if request.auth == null || request.auth != null;
       allow write: if isAdmin();
     }
 
@@ -94,7 +94,7 @@ service cloud.firestore {
      * @path /galleryCategories/{categoryId}
      */
     match /galleryCategories/{categoryId} {
-      allow get, list: if request.auth == null || request.auth != null;
+      allow read: if request.auth == null || request.auth != null;
       allow write: if isAdmin();
     }
     
@@ -103,7 +103,7 @@ service cloud.firestore {
      * @path /projects/{projectId}
      */
     match /projects/{projectId} {
-      allow get, list: if request.auth == null || request.auth != null;
+      allow read: if request.auth == null || request.auth != null;
       allow write: if isAdmin();
     }
     
@@ -112,7 +112,7 @@ service cloud.firestore {
      * @path /galleryImages/{imageId}
      */
     match /galleryImages/{imageId} {
-      allow get, list: if request.auth == null || request.auth != null;
+      allow read: if request.auth == null || request.auth != null;
       allow write: if isAdmin();
     }
 
