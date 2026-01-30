@@ -17,8 +17,11 @@ export const sendMail = async ({ to, subject, html }: MailPayload) => {
     throw new Error(errorMessage);
   }
 
+  // Using explicit SMTP configuration for Gmail
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // true for 465, false for other ports
     auth: {
       user: EMAIL_SERVER_USER,
       pass: EMAIL_SERVER_PASSWORD,
@@ -33,13 +36,12 @@ export const sendMail = async ({ to, subject, html }: MailPayload) => {
   };
 
   try {
-    // We can optionally verify the connection, but sendMail will do it implicitly
-    // await transporter.verify();
     const info = await transporter.sendMail(mailOptions);
     console.log('Message sent: %s', info.messageId);
     return info;
   } catch (error) {
     console.error('Error sending email via nodemailer:', error);
-    throw new Error('Could not send email due to a server configuration issue.');
+    // Re-throwing the error to be caught by the server action
+    throw new Error('Could not send email. Please check server logs for details.');
   }
 };
