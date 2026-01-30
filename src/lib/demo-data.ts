@@ -23,6 +23,7 @@ export const DEMO_SITE_CONTENT: Omit<SiteContent, 'id'> = {
     instagram: 'https://www.instagram.com/',
     email: 'hello@pk.design'
   },
+  adminEmail: 'PrashantKumarsheoganj@gmail.com',
   theme: 'dark',
   isMaintenanceModeEnabled: false,
   areAnimationsEnabled: true,
