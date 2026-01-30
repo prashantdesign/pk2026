@@ -1,37 +1,46 @@
-'use client';
+import React from 'react';
 import type { SiteContent } from '@/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 
-export default function ToolsSection({ content }: { content: SiteContent | null }) {
-    if (!content?.tools || content.tools.length === 0) {
-        return null;
-    }
-  
-    return (
-      <section id="tools" className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{content.toolsSectionTitle || 'Tools I Use'}</h2>
-             {content.toolsSectionDescription && (
-              <p className="mt-4 text-lg text-muted-foreground">{content.toolsSectionDescription}</p>
+interface ToolsSectionProps {
+  content: SiteContent | null;
+}
+
+export default function ToolsSection({ content }: ToolsSectionProps) {
+  if (!content || !content.tools || content.tools.length === 0) {
+    return null;
+  }
+
+  return (
+    <section id="tools" className="w-full py-12 md:py-24 lg:py-32 bg-secondary">
+      <div className="container px-4 md:px-6">
+        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">{content.toolsSectionTitle || 'Tools I Use'}</h2>
+            {content.toolsSectionDescription && (
+              <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                {content.toolsSectionDescription}
+              </p>
             )}
           </div>
-  
-          <div className="mt-12 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 md:gap-8 justify-items-center">
-            {content.tools.map((tool, index) => (
-              <div key={index} className="flex flex-col items-center gap-2 text-center w-24">
-                <div className="w-20 h-20 relative p-4 bg-muted rounded-full flex items-center justify-center transition-transform hover:scale-110">
-                    {tool.iconUrl ? (
-                        <Image src={tool.iconUrl} alt={tool.name} fill className="object-contain p-2" />
-                    ) : (
-                        <span className="text-xs text-muted-foreground text-center">{tool.name}</span>
-                    )}
-                </div>
-                <p className="font-semibold text-sm truncate w-full">{tool.name}</p>
-              </div>
-            ))}
-          </div>
         </div>
-      </section>
-    );
-  }
+        <div className="mx-auto grid max-w-5xl grid-cols-2 items-center justify-center gap-6 py-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {content.tools.map((tool, index) => (
+            <div key={index} className="flex flex-col items-center justify-center gap-2">
+              <div className="relative h-16 w-16 bg-white rounded-lg p-2 flex items-center justify-center">
+                <Image
+                  src={tool.iconUrl}
+                  alt={`${tool.name} icon`}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <span className="text-sm font-medium">{tool.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
