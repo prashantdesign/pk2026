@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import { getSdks } from '@/firebase/index.server';
 
 const contactSchema = z.object({
@@ -37,12 +37,12 @@ export async function submitContactForm(
   try {
     const { firestore } = getSdks();
     
-    await addDoc(collection(firestore, 'contactMessages'), {
+    await firestore.collection('contactMessages').add({
       name,
       email,
       message,
       isRead: false,
-      timestamp: serverTimestamp(),
+      timestamp: FieldValue.serverTimestamp(),
     });
     
     return { message: 'Thank you for your message! I will get back to you soon.' };
