@@ -5,7 +5,12 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore'
 
+// This function is intended for client-side use only.
 export function initializeFirebase() {
+  if (typeof window === 'undefined') {
+    throw new Error("Firebase should only be initialized on the client side.");
+  }
+  
   if (getApps().length > 0) {
     return getSdks(getApp());
   }

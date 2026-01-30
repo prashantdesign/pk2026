@@ -57,6 +57,7 @@ export interface SiteContent {
     instagram?: string;
     email?: string;
   };
+  adminEmail?: string;
   aiSettings?: {
     geminiModel?: string;
     isAiFeatureEnabled?: boolean;

@@ -1,83 +1,77 @@
 'use client';
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useToast } from '@/hooks/use-toast';
-import { useFirestore } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-import { Button } from '@/components/ui/button';
+import React, { useEffect } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
+import { submitContactForm } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required.'),
-  email: z.string().email('Invalid email address.'),
-  message: z.string().min(10, 'Message must be at least 10 characters.'),
-});
+const initialState = {
+  message: '',
+  error: false,
+};
 
-const ContactSection = () => {
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending} className="w-full">
+      {pending ? 'Sending...' : 'Send Message'}
+    </Button>
+  );
+}
+
+export default function ContactSection() {
+  const [state, formAction] = useFormState(submitContactForm, initialState);
   const { toast } = useToast();
-  const firestore = useFirestore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = React.useRef<HTMLFormElement>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { name: '', email: '', message: '' },
-  });
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Could not connect to database.' });
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      await addDoc(collection(firestore, 'contactMessages'), {
-        ...values,
-        timestamp: serverTimestamp(),
-        isRead: false,
+  useEffect(() => {
+    if (state.message) {
+      toast({
+        title: state.error ? 'Oops!' : 'Success!',
+        description: state.message,
+        variant: state.error ? 'destructive' : 'default',
       });
-      toast({ title: 'Message Sent!', description: "Thanks for reaching out. I'll get back to you soon." });
-      form.reset();
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to send message.' });
-    } finally {
-      setIsSubmitting(false);
+      if (!state.error) {
+        formRef.current?.reset();
+      }
     }
-  };
+  }, [state, toast]);
 
   return (
-    <section id="contact" className="py-24 bg-secondary">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="max-w-2xl mx-auto text-center animate-fade-in-up">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Get In Touch</h2>
-            <p className="text-muted-foreground mt-2">Have a project in mind or just want to say hi? Send me a message.</p>
-        </div>
-
-        <div className="max-w-2xl mx-auto mt-12 animate-fade-in-up animation-delay-300">
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField control={form.control} name="name" render={({ field }) => (
-                        <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )}/>
-                    <FormField control={form.control} name="email" render={({ field }) => (
-                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )}/>
-                    <FormField control={form.control} name="message" render={({ field }) => (
-                        <FormItem><FormLabel>Message</FormLabel><FormControl><Textarea className="min-h-32" {...field} /></FormControl><FormMessage /></FormItem>
-                    )}/>
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? "Sending..." : "Send Message"}
-                    </Button>
-                </form>
-            </Form>
-        </div>
+    <section id="contact" className="py-20 md:py-32">
+      <div className="container mx-auto px-4">
+        <Card className="max-w-xl mx-auto">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl">Get in Touch</CardTitle>
+            <CardDescription>
+              Have a project in mind or just want to say hi? Fill out the form below.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form ref={formRef} action={formAction} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input id="name" name="name" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" name="email" type="email" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="message">Message</Label>
+                <Textarea id="message" name="message" required />
+              </div>
+              <SubmitButton />
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
-};
-
-export default ContactSection;
+}

@@ -61,6 +61,7 @@ const formSchema = z.object({
 
   theme: z.enum(['light', 'dark']).default('dark'),
 
+  adminEmail: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal('')),
   linkedin: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   twitter: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   instagram: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
@@ -111,6 +112,7 @@ export default function SiteContentForm() {
       portfolioSectionTitle: "My Work",
       portfolioSectionDescription: "",
       theme: 'dark',
+      adminEmail: "",
       linkedin: "",
       twitter: "",
       instagram: "",
@@ -155,6 +157,7 @@ export default function SiteContentForm() {
         portfolioSectionTitle: siteContent.portfolioSectionTitle || "My Work",
         portfolioSectionDescription: siteContent.portfolioSectionDescription || "",
         theme: siteContent.theme || 'dark',
+        adminEmail: siteContent.adminEmail,
         linkedin: siteContent.socials?.linkedin,
         twitter: siteContent.socials?.twitter,
         instagram: siteContent.socials?.instagram,
@@ -561,8 +564,21 @@ export default function SiteContentForm() {
           <AccordionItem value="socials">
             <AccordionTrigger className="text-xl font-semibold">Contact & Socials</AccordionTrigger>
             <AccordionContent className="pt-4 space-y-4">
+               <FormField control={form.control} name="adminEmail" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Admin Notification Email</FormLabel>
+                    <FormDescription>The email address where contact form notifications will be sent.</FormDescription>
+                    <FormControl><Input placeholder="admin@example.com" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+              )} />
               <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem><FormLabel>Contact Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                  <FormItem>
+                    <FormLabel>Public Contact Email</FormLabel>
+                    <FormDescription>The email address displayed publicly on your site.</FormDescription>
+                    <FormControl><Input placeholder="your.email@example.com" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
               )} />
               <FormField control={form.control} name="linkedin" render={({ field }) => (
                   <FormItem><FormLabel>LinkedIn URL</FormLabel><FormControl><Input placeholder="https://linkedin.com/in/..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
