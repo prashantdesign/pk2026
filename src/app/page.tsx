@@ -15,6 +15,8 @@ import Footer from '@/components/public/footer';
 import ProjectModal from '@/components/public/project-modal';
 import StatsSection from '@/components/public/stats-section';
 import GallerySection from '@/components/public/gallery-section';
+import SkillsSection from '@/components/public/skills-section';
+import ToolsSection from '@/components/public/tools-section';
 
 export default function Home() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -74,8 +76,10 @@ export default function Home() {
         <HeroSection content={siteContent} />
         {(siteContent?.isAboutSectionVisible ?? true) && <AboutSection content={siteContent} />}
         {(siteContent?.isStatsSectionVisible ?? true) && <StatsSection content={siteContent} />}
-        {(siteContent?.isGallerySectionVisible ?? true) && <GallerySection />}
-        {(siteContent?.isPortfolioSectionVisible ?? true) && <PortfolioSection onProjectClick={handleProjectClick} />}
+        {(siteContent?.isSkillsSectionVisible ?? true) && <SkillsSection content={siteContent} />}
+        {(siteContent?.isToolsSectionVisible ?? true) && <ToolsSection content={siteContent} />}
+        {(siteContent?.isGallerySectionVisible ?? true) && <GallerySection content={siteContent} />}
+        {(siteContent?.isPortfolioSectionVisible ?? true) && <PortfolioSection content={siteContent} onProjectClick={handleProjectClick} />}
         <ContactSection />
       </main>
       <Footer content={siteContent} />
@@ -89,3 +93,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

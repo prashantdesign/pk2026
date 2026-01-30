@@ -1,107 +1,114 @@
-'use client';
-import React, { useState, useMemo } from 'react';
-import type { Project, ProjectCategory } from '@/types';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent } from '@/components/ui/card';
+"use client";
+
+import React, { useMemo, useState } from 'react';
+import { collection, query, orderBy, where } from 'firebase/firestore';
+import { useFirestore, useCollection } from '@/firebase';
+import type { Project, ProjectCategory, SiteContent } from '@/types';
 import Image from 'next/image';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowUpRight } from 'lucide-react';
+import SectionHeader from './section-header';
+import { Skeleton } from '../ui/skeleton';
 
 interface PortfolioSectionProps {
   onProjectClick: (project: Project) => void;
+  content?: SiteContent | null;
 }
 
-const PortfolioSection = ({ onProjectClick }: PortfolioSectionProps) => {
+export default function PortfolioSection({ onProjectClick, content }: PortfolioSectionProps) {
   const firestore = useFirestore();
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const projectsQuery = useMemoFirebase(() => {
+  const categoriesQuery = useMemo(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'projects'), orderBy('order'));
+    return query(collection(firestore, 'projectCategories'), orderBy('order', 'asc'));
   }, [firestore]);
 
-  const categoriesQuery = useMemoFirebase(() => {
+  const projectsQuery = useMemo(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'projectCategories'), orderBy('order'));
-  }, [firestore]);
+    if (selectedCategory) {
+      return query(
+        collection(firestore, 'projects'),
+        where('projectCategoryId', '==', selectedCategory),
+        orderBy('order', 'asc')
+      );
+    }
+    return query(collection(firestore, 'projects'), orderBy('order', 'asc'));
+  }, [firestore, selectedCategory]);
 
-  const { data: projects, isLoading: projectsLoading } = useCollection<Project>(projectsQuery);
-  const { data: categories, isLoading: categoriesLoading } = useCollection<ProjectCategory>(categoriesQuery);
+  const { data: categories, loading: categoriesLoading } = useCollection<ProjectCategory>(categoriesQuery);
+  const { data: projects, loading: projectsLoading } = useCollection<Project>(projectsQuery);
 
-  const categoryMap = useMemo(() => {
-    return categories?.reduce((acc, cat) => {
-      acc[cat.id] = cat.name;
-      return acc;
-    }, {} as Record<string, string>) || {};
-  }, [categories]);
-
-  const filteredProjects = useMemo(() => {
-    if (!projects) return [];
-    if (selectedCategory === 'all') return projects;
-    return projects.filter(project => project.projectCategoryId === selectedCategory);
-  }, [projects, selectedCategory]);
-
-  const loading = projectsLoading || categoriesLoading;
+  const loading = categoriesLoading || projectsLoading;
 
   return (
-    <section id="work" className="py-24">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col items-center mb-12 animate-fade-in-up">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">My Work</h2>
-            <p className="text-muted-foreground mt-2 max-w-2xl text-center">A selection of my projects. Click to see the details.</p>
-        </div>
-
-        <div className="flex justify-center flex-wrap gap-2 mb-8 animate-fade-in-up animation-delay-300">
+    <section id="work" className="py-20 lg:py-32 bg-secondary/50">
+      <div className="container mx-auto px-4">
+        <SectionHeader 
+          title={content?.portfolioSectionTitle}
+          description={content?.portfolioSectionDescription}
+        />
+        
+        <div className="flex flex-wrap justify-center gap-2 mb-12 animate-fade-in-up animation-delay-300">
           <Button
-            variant={selectedCategory === 'all' ? 'default' : 'outline'}
-            onClick={() => setSelectedCategory('all')}
+            variant={!selectedCategory ? 'default' : 'secondary'}
+            onClick={() => setSelectedCategory(null)}
           >
             All
           </Button>
-          {categories?.map(cat => (
+          {categories?.map((category) => (
             <Button
-              key={cat.id}
-              variant={selectedCategory === cat.id ? 'default' : 'outline'}
-              onClick={() => setSelectedCategory(cat.id)}
+              key={category.id}
+              variant={selectedCategory === category.id ? 'default' : 'secondary'}
+              onClick={() => setSelectedCategory(category.id)}
             >
-              {cat.name}
+              {category.name}
             </Button>
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {loading && [...Array(6)].map((_, i) => (
-             <Card key={i}><CardContent className="p-0"><Skeleton className="w-full h-80" /></CardContent></Card>
-          ))}
-          {!loading && filteredProjects.map((project, index) => (
-            <Card
-              key={project.id}
-              className="overflow-hidden group cursor-pointer animate-fade-in-up"
-              style={{ animationDelay: `${(index % 3) * 150}ms` }}
-              onClick={() => onProjectClick(project)}
-            >
-              <CardContent className="p-0">
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    src={project.imageUrl}
-                    alt={project.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-1">{project.title}</h3>
-                  <p className="text-sm text-primary">{categoryMap[project.projectCategoryId] || 'Uncategorized'}</p>
-                  <p className="text-muted-foreground mt-2 text-sm">{project.description}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-96 w-full" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {projects?.map((project, index) => (
+              <Card
+                key={project.id}
+                className="group overflow-hidden cursor-pointer animate-fade-in-up"
+                style={{ animationDelay: `${index * 150}ms` }}
+                onClick={() => onProjectClick(project)}
+              >
+                <CardHeader className="p-0">
+                  <div className="relative aspect-video overflow-hidden">
+                    <Image
+                      src={project.imageUrl}
+                      alt={project.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-xl font-bold">{project.title}</h3>
+                      <p className="text-muted-foreground">{project.description}</p>
+                    </div>
+                    <ArrowUpRight className="h-6 w-6 text-muted-foreground transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
-};
+}
 
-export default PortfolioSection;
+    

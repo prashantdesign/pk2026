@@ -68,6 +68,21 @@ export interface SiteContent {
   isStatsSectionVisible?: boolean;
   isGallerySectionVisible?: boolean;
   isPortfolioSectionVisible?: boolean;
+  isSkillsSectionVisible?: boolean;
+  isToolsSectionVisible?: boolean;
+  skillsSectionTitle?: string;
+  skillsSectionDescription?: string;
+  skills?: string[];
+  toolsSectionTitle?: string;
+  toolsSectionDescription?: string;
+  tools?: {
+    name: string;
+    iconUrl: string;
+  }[];
+  gallerySectionTitle?: string;
+  gallerySectionDescription?: string;
+  portfolioSectionTitle?: string;
+  portfolioSectionDescription?: string;
 }
 
 export interface ContactMessage {
@@ -78,3 +93,5 @@ export interface ContactMessage {
     timestamp: Timestamp;
     isRead: boolean;
 }
+
+    

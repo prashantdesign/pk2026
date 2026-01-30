@@ -39,6 +39,25 @@ const formSchema = z.object({
     value: z.string().min(1, 'Value is required.'),
   })).optional(),
 
+  skillsSectionTitle: z.string().optional(),
+  skillsSectionDescription: z.string().optional(),
+  skills: z.array(z.object({
+    name: z.string().min(1, 'Skill name is required.')
+  })).optional(),
+
+  toolsSectionTitle: z.string().optional(),
+  toolsSectionDescription: z.string().optional(),
+  tools: z.array(z.object({
+    name: z.string().min(1, 'Tool name is required.'),
+    iconUrl: z.string().url('Icon URL is required.'),
+  })).optional(),
+  
+  gallerySectionTitle: z.string().optional(),
+  gallerySectionDescription: z.string().optional(),
+
+  portfolioSectionTitle: z.string().optional(),
+  portfolioSectionDescription: z.string().optional(),
+
   theme: z.enum(['light', 'dark']).default('dark'),
 
   linkedin: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
@@ -55,6 +74,8 @@ export default function SiteContentForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+
   const firestore = useFirestore();
 
   const siteContentRef = useMemo(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
@@ -71,6 +92,23 @@ export default function SiteContentForm() {
       aboutText: "",
       aboutImageUrl: "",
       stats: [],
+      skillsSectionTitle: "Skills & Expertise",
+      skillsSectionDescription: "",
+      skills: [
+        { name: "Graphic Design & Branding" },
+        { name: "AI in Design (Image Generation & Enhancement)" },
+        { name: "Social Media Design & Content Creation" },
+        { name: "E-commerce Design (Amazon & Flipkart)" },
+        { name: "Packaging & Label Design" },
+        { name: "Digital Marketing Creatives" }
+      ],
+      toolsSectionTitle: "Tools I Use",
+      toolsSectionDescription: "",
+      tools: [],
+      gallerySectionTitle: "Gallery",
+      gallerySectionDescription: "",
+      portfolioSectionTitle: "My Work",
+      portfolioSectionDescription: "",
       theme: 'dark',
       linkedin: "",
       twitter: "",
@@ -81,9 +119,17 @@ export default function SiteContentForm() {
     },
   });
   
-  const { fields, append, remove } = useFieldArray({
+  const { fields: statsFields, append: appendStat, remove: removeStat } = useFieldArray({
     control: form.control,
     name: "stats",
+  });
+  const { fields: skillsFields, append: appendSkill, remove: removeSkill } = useFieldArray({
+    control: form.control,
+    name: "skills",
+  });
+  const { fields: toolsFields, append: appendTool, remove: removeTool } = useFieldArray({
+    control: form.control,
+    name: "tools",
   });
 
   useEffect(() => {
@@ -97,6 +143,16 @@ export default function SiteContentForm() {
         aboutText: siteContent.aboutText,
         aboutImageUrl: siteContent.aboutImageUrl,
         stats: siteContent.stats,
+        skillsSectionTitle: siteContent.skillsSectionTitle || "Skills & Expertise",
+        skillsSectionDescription: siteContent.skillsSectionDescription || "",
+        skills: siteContent.skills?.map(s => ({ name: s })) || [],
+        toolsSectionTitle: siteContent.toolsSectionTitle || "Tools I Use",
+        toolsSectionDescription: siteContent.toolsSectionDescription || "",
+        tools: siteContent.tools || [],
+        gallerySectionTitle: siteContent.gallerySectionTitle || "Gallery",
+        gallerySectionDescription: siteContent.gallerySectionDescription || "",
+        portfolioSectionTitle: siteContent.portfolioSectionTitle || "My Work",
+        portfolioSectionDescription: siteContent.portfolioSectionDescription || "",
         theme: siteContent.theme || 'dark',
         linkedin: siteContent.socials?.linkedin,
         twitter: siteContent.socials?.twitter,
@@ -108,20 +164,27 @@ export default function SiteContentForm() {
     }
   }, [siteContent, form]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'aboutImageUrl' | `tools.${number}.iconUrl` ) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      setIsUploading(true);
+      if(typeof fieldName === 'string' && fieldName.startsWith('tools.')) {
+        const index = parseInt(fieldName.split('.')[1], 10);
+        setUploadingIndex(index);
+      } else {
+        setIsUploading(true);
+      }
+      
       try {
           const downloadURL = await uploadToCloudinary(file);
-          form.setValue('aboutImageUrl', downloadURL, { shouldValidate: true });
+          form.setValue(fieldName, downloadURL, { shouldValidate: true });
           toast({title: "Image uploaded successfully"});
       } catch (error: any) {
           toast({variant: "destructive", title: "Image upload failed", description: error.message});
           console.error("Cloudinary upload error: ", error);
       } finally {
           setIsUploading(false);
+          setUploadingIndex(null);
       }
   }
 
@@ -130,15 +193,8 @@ export default function SiteContentForm() {
     setIsLoading(true);
 
     const dataToSave = {
-      siteName: values.siteName,
-      heroTitle: values.heroTitle,
-      heroSubtitle: values.heroSubtitle,
-      ctaText: values.ctaText,
-      ctaLink: values.ctaLink,
-      aboutText: values.aboutText,
-      aboutImageUrl: values.aboutImageUrl,
-      stats: values.stats,
-      theme: values.theme,
+      ...values,
+      skills: values.skills?.map(s => s.name),
       socials: {
         linkedin: values.linkedin,
         twitter: values.twitter,
@@ -185,7 +241,7 @@ export default function SiteContentForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Accordion type="multiple" defaultValue={['hero', 'about', 'stats', 'theme', 'socials', 'ai']} className="w-full">
+        <Accordion type="multiple" defaultValue={['hero', 'about', 'stats', 'skills', 'tools', 'gallery', 'portfolio', 'theme', 'socials', 'ai']} className="w-full">
           <AccordionItem value="hero">
             <AccordionTrigger className="text-xl font-semibold">Hero Section</AccordionTrigger>
             <AccordionContent className="pt-4 space-y-4">
@@ -238,7 +294,7 @@ export default function SiteContentForm() {
                     <FormItem>
                       <FormLabel>Upload an image file</FormLabel>
                       <FormControl>
-                        <Input type="file" onChange={handleImageUpload} disabled={isUploading} />
+                        <Input type="file" onChange={(e) => handleImageUpload(e, 'aboutImageUrl')} disabled={isUploading} />
                       </FormControl>
                       {isUploading && <p className="text-sm text-muted-foreground mt-2">Uploading...</p>}
                       <FormMessage />
@@ -261,7 +317,7 @@ export default function SiteContentForm() {
             <AccordionContent className="pt-4 space-y-4">
               <FormLabel>Statistics</FormLabel>
               <FormDescription>Add key metrics to display on your site.</FormDescription>
-              {fields.map((field, index) => (
+              {statsFields.map((field, index) => (
                 <div key={field.id} className="flex items-end gap-2 p-2 border rounded-lg">
                   <div className="flex-grow grid grid-cols-2 gap-2">
                     <FormField
@@ -287,14 +343,147 @@ export default function SiteContentForm() {
                       )}
                     />
                   </div>
-                  <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                  <Button type="button" variant="destructive" size="icon" onClick={() => removeStat(index)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
-              <Button type="button" variant="outline" size="sm" onClick={() => append({ label: '', value: '' })}>
+              <Button type="button" variant="outline" size="sm" onClick={() => appendStat({ label: '', value: '' })}>
                 Add Stat
               </Button>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="skills">
+            <AccordionTrigger className="text-xl font-semibold">Skills Section</AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+               <FormField control={form.control} name="skillsSectionTitle" render={({ field }) => (
+                  <FormItem><FormLabel>Section Title</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="skillsSectionDescription" render={({ field }) => (
+                  <FormItem><FormLabel>Section Description</FormLabel><FormControl><Textarea {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormLabel>Skills List</FormLabel>
+              <FormDescription>Add skills to showcase your expertise.</FormDescription>
+               {skillsFields.map((field, index) => (
+                <div key={field.id} className="flex items-end gap-2 p-2 border rounded-lg">
+                    <FormField
+                      control={form.control}
+                      name={`skills.${index}.name`}
+                      render={({ field }) => (
+                        <FormItem className="flex-grow">
+                          <FormLabel>Skill</FormLabel>
+                          <FormControl><Input placeholder="e.g., Graphic Design" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  <Button type="button" variant="destructive" size="icon" onClick={() => removeSkill(index)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => appendSkill({ name: '' })}>
+                Add Skill
+              </Button>
+            </AccordionContent>
+          </AccordionItem>
+           <AccordionItem value="tools">
+            <AccordionTrigger className="text-xl font-semibold">Tools Section</AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              <FormField control={form.control} name="toolsSectionTitle" render={({ field }) => (
+                  <FormItem><FormLabel>Section Title</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="toolsSectionDescription" render={({ field }) => (
+                  <FormItem><FormLabel>Section Description</FormLabel><FormControl><Textarea {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormLabel>Tools List</FormLabel>
+              <FormDescription>Add tools you use, with an icon for each.</FormDescription>
+              {toolsFields.map((field, index) => {
+                const toolIconUrl = form.watch(`tools.${index}.iconUrl`);
+                return (
+                  <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg">
+                    <div className="flex-grow space-y-4">
+                       <FormField
+                          control={form.control}
+                          name={`tools.${index}.name`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Tool Name</FormLabel>
+                              <FormControl><Input placeholder="e.g., Figma" {...field} /></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <div className="space-y-2">
+                          <Tabs defaultValue="url" className="w-full">
+                            <TabsList className="grid w-full grid-cols-2">
+                              <TabsTrigger value="url">URL</TabsTrigger>
+                              <TabsTrigger value="upload">Upload</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="url" className="pt-4">
+                              <FormField
+                                control={form.control}
+                                name={`tools.${index}.iconUrl`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Icon URL</FormLabel>
+                                    <FormControl><Input placeholder="https://..." {...field} /></FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </TabsContent>
+                             <TabsContent value="upload" className="pt-4">
+                               <FormItem>
+                                <FormLabel>Upload an icon</FormLabel>
+                                <FormControl>
+                                    <Input type="file" onChange={(e) => handleImageUpload(e, `tools.${index}.iconUrl`)} disabled={uploadingIndex === index} />
+                                </FormControl>
+                                {uploadingIndex === index && <p className="text-sm text-muted-foreground mt-2">Uploading...</p>}
+                                <FormMessage />
+                               </FormItem>
+                            </TabsContent>
+                          </Tabs>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-2 items-center">
+                        {toolIconUrl && (
+                            <div className="mt-2 relative h-16 w-16 bg-muted rounded-md">
+                                <Image src={toolIconUrl} alt="Tool Icon Preview" fill className="rounded-md object-contain p-1" />
+                            </div>
+                        )}
+                        <Button type="button" variant="destructive" size="icon" onClick={() => removeTool(index)}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                  </div>
+                )
+              })}
+              <Button type="button" variant="outline" size="sm" onClick={() => appendTool({ name: '', iconUrl: '' })}>
+                Add Tool
+              </Button>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="gallery">
+            <AccordionTrigger className="text-xl font-semibold">Gallery Section</AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+               <FormField control={form.control} name="gallerySectionTitle" render={({ field }) => (
+                  <FormItem><FormLabel>Section Title</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="gallerySectionDescription" render={({ field }) => (
+                  <FormItem><FormLabel>Section Description</FormLabel><FormControl><Textarea {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="portfolio">
+            <AccordionTrigger className="text-xl font-semibold">Portfolio Section</AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+               <FormField control={form.control} name="portfolioSectionTitle" render={({ field }) => (
+                  <FormItem><FormLabel>Section Title</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="portfolioSectionDescription" render={({ field }) => (
+                  <FormItem><FormLabel>Section Description</FormLabel><FormControl><Textarea {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+              )} />
             </AccordionContent>
           </AccordionItem>
            <AccordionItem value="ai">
@@ -381,8 +570,10 @@ export default function SiteContentForm() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-        <Button type="submit" disabled={isLoading || isUploading}>{isLoading ? 'Saving...' : 'Save Content'}</Button>
+        <Button type="submit" disabled={isLoading || isUploading || uploadingIndex !== null}>{isLoading ? 'Saving...' : 'Save Content'}</Button>
       </form>
     </Form>
   );
 }
+
+    
