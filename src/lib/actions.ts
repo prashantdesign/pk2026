@@ -1,8 +1,9 @@
 'use server';
 
 import { z } from 'zod';
-import { FieldValue } from 'firebase-admin/firestore';
-import { getSdks } from '@/firebase/index.server';
+import { initializeApp, getApps } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { firebaseConfig } from '@/firebase/config';
 
 const contactSchema = z.object({
   name: z.string().min(1, { message: 'Name is required.' }),
@@ -35,7 +36,13 @@ export async function submitContactForm(
   const { name, email, message } = parsed.data;
 
   try {
-    const { firestore } = getSdks();
+    // Initialize Firebase Admin SDK if not already done
+    if (!getApps().length) {
+      initializeApp({
+        projectId: firebaseConfig.projectId,
+      });
+    }
+    const firestore = getFirestore();
     
     await firestore.collection('contactMessages').add({
       name,
