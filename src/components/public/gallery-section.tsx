@@ -1,100 +1,110 @@
-"use client";
+'use client';
 
-import React, { useMemo, useState } from 'react';
-import { collection, query, orderBy, where } from 'firebase/firestore';
-import { useFirestore, useCollection } from '@/firebase';
+import React, { useState, useMemo } from 'react';
 import type { SiteContent, GalleryImage, GalleryCategory } from '@/types';
-import Image from 'next/image';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
-import SectionHeader from './section-header';
+import { Card, CardContent } from '@/components/ui/card';
+import Image from 'next/image';
 import { Skeleton } from '../ui/skeleton';
 
 interface GallerySectionProps {
-  content?: SiteContent | null;
+  content: SiteContent | null;
 }
 
 export default function GallerySection({ content }: GallerySectionProps) {
   const firestore = useFirestore();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  const categoriesQuery = useMemo(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'galleryCategories'), orderBy('order', 'asc'));
-  }, [firestore]);
+  const imagesQuery = useMemoFirebase(() => 
+    firestore ? query(collection(firestore, 'galleryImages'), orderBy('order', 'asc')) : null
+  , [firestore]);
 
-  const imagesQuery = useMemo(() => {
-    if (!firestore) return null;
-    if (selectedCategory) {
-      return query(
-        collection(firestore, 'galleryImages'),
-        where('galleryCategoryId', '==', selectedCategory),
-        orderBy('order', 'asc')
-      );
-    }
-    return query(collection(firestore, 'galleryImages'), orderBy('order', 'asc'));
-  }, [firestore, selectedCategory]);
+  const categoriesQuery = useMemoFirebase(() => 
+    firestore ? query(collection(firestore, 'galleryCategories'), orderBy('order', 'asc')) : null
+  , [firestore]);
 
-  const { data: categories, loading: categoriesLoading } = useCollection<GalleryCategory>(categoriesQuery);
-  const { data: images, loading: imagesLoading } = useCollection<GalleryImage>(imagesQuery);
+  const { data: images, isLoading: imagesLoading } = useCollection<GalleryImage>(imagesQuery);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<GalleryCategory>(categoriesQuery);
 
-  const loading = categoriesLoading || imagesLoading;
+  const filteredImages = useMemo(() => {
+    if (!images) return [];
+    if (selectedCategory === 'all') return images;
+    return images.filter(img => img.galleryCategoryId === selectedCategory);
+  }, [images, selectedCategory]);
+  
+  const isLoading = imagesLoading || categoriesLoading;
 
   return (
-    <section id="gallery" className="py-20 lg:py-32">
+    <section id="gallery" className="py-16 md:py-24">
       <div className="container mx-auto px-4">
-        <SectionHeader 
-            title={content?.gallerySectionTitle}
-            description={content?.gallerySectionDescription}
-        />
-        
-        <div className="flex flex-wrap justify-center gap-2 mb-12 animate-fade-in-up animation-delay-300">
-          <Button
-            variant={!selectedCategory ? 'default' : 'secondary'}
-            onClick={() => setSelectedCategory(null)}
-          >
-            All
-          </Button>
-          {categories?.map((category) => (
-            <Button
-              key={category.id}
-              variant={selectedCategory === category.id ? 'default' : 'secondary'}
-              onClick={() => setSelectedCategory(category.id)}
-            >
-              {category.name}
-            </Button>
-          ))}
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight animate-fade-in-up">
+            {content?.gallerySectionTitle || 'Gallery'}
+          </h2>
+          {content?.gallerySectionDescription && (
+            <p className="mt-4 text-lg text-muted-foreground animate-fade-in-up animation-delay-300">
+              {content.gallerySectionDescription}
+            </p>
+          )}
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="aspect-square w-full" />
-            ))}
-          </div>
+        {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <Skeleton className="aspect-square w-full" />
+                <Skeleton className="aspect-square w-full" />
+                <Skeleton className="aspect-square w-full" />
+                <Skeleton className="aspect-square w-full" />
+            </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images?.map((image, index) => (
-              <div
-                key={image.id}
-                className="group relative aspect-square w-full overflow-hidden rounded-lg animate-fade-in-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <Image
-                  src={image.imageUrl}
-                  alt={image.title}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-white text-center p-2">{image.title}</p>
+            <>
+                <div className="flex justify-center flex-wrap gap-2 mb-12 animate-fade-in-up animation-delay-600">
+                    <Button
+                        variant={selectedCategory === 'all' ? 'default' : 'outline'}
+                        onClick={() => setSelectedCategory('all')}
+                    >
+                        All
+                    </Button>
+                    {categories?.map((cat) => (
+                        <Button
+                        key={cat.id}
+                        variant={selectedCategory === cat.id ? 'default' : 'outline'}
+                        onClick={() => setSelectedCategory(cat.id)}
+                        >
+                        {cat.name}
+                        </Button>
+                    ))}
                 </div>
-              </div>
-            ))}
-          </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {filteredImages.map((image, index) => (
+                        <div key={image.id} className={`animate-fade-in-up`} style={{animationDelay: `${600 + index * 100}ms`}}>
+                        <Card className="overflow-hidden group cursor-pointer">
+                            <CardContent className="p-0 relative aspect-square">
+                            <Image
+                                src={image.imageUrl}
+                                alt={image.title}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                data-ai-hint="gallery image"
+                            />
+                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                <p className="text-white text-sm font-medium drop-shadow-md">{image.title}</p>
+                            </div>
+                            </CardContent>
+                        </Card>
+                        </div>
+                    ))}
+                </div>
+                {filteredImages.length === 0 && (
+                    <div className="text-center col-span-full py-12 text-muted-foreground">
+                        No images found in this category.
+                    </div>
+                )}
+            </>
         )}
       </div>
     </section>
   );
 }
-
-    
