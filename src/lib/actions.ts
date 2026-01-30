@@ -1,10 +1,11 @@
 'use server';
 
 import { z } from 'zod';
-import { addDoc, collection, doc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { getSdks } from '@/firebase/index.server';
-import { sendMail } from '@/lib/mail';
-import type { SiteContent } from '@/types';
+// import { sendMail } from '@/lib/mail';
+// import type { SiteContent } from '@/types';
+// import { doc, getDoc } from 'firebase/firestore';
 
 const contactSchema = z.object({
   name: z.string().min(1, { message: 'Name is required.' }),
@@ -40,7 +41,7 @@ export async function submitContactForm(
     const { firestore } = getSdks();
     
     // 1. Save message to Firestore
-    const messageRef = await addDoc(collection(firestore, 'contactMessages'), {
+    await addDoc(collection(firestore, 'contactMessages'), {
       name,
       email,
       message,
@@ -48,32 +49,32 @@ export async function submitContactForm(
       timestamp: serverTimestamp(),
     });
 
-    // 2. Fetch admin email and send notification
-    const siteContentRef = doc(firestore, 'siteContent', 'global');
-    const siteContentSnap = await getDoc(siteContentRef);
+    // 2. Email sending is temporarily disabled to prevent errors.
+    // const siteContentRef = doc(firestore, 'siteContent', 'global');
+    // const siteContentSnap = await getDoc(siteContentRef);
 
-    if (siteContentSnap.exists()) {
-      const siteContent = siteContentSnap.data() as SiteContent;
-      const adminEmail = siteContent.adminEmail;
+    // if (siteContentSnap.exists()) {
+    //   const siteContent = siteContentSnap.data() as SiteContent;
+    //   const adminEmail = siteContent.adminEmail;
 
-      if (adminEmail) {
-        await sendMail({
-          to: adminEmail,
-          subject: `New Contact Form Message from ${name}`,
-          html: `
-            <div style="font-family: sans-serif; padding: 20px; background-color: #f4f4f4;">
-              <h2 style="color: #333;">New Message from your Portfolio Contact Form</h2>
-              <div style="background-color: #fff; padding: 20px; border-radius: 5px;">
-                <p><strong>Name:</strong> ${name}</p>
-                <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
-                <p><strong>Message:</strong></p>
-                <p style="white-space: pre-wrap; border-left: 3px solid #ccc; padding-left: 15px;">${message}</p>
-              </div>
-            </div>
-          `,
-        });
-      }
-    }
+    //   if (adminEmail) {
+    //     await sendMail({
+    //       to: adminEmail,
+    //       subject: `New Contact Form Message from ${name}`,
+    //       html: `
+    //         <div style="font-family: sans-serif; padding: 20px; background-color: #f4f4f4;">
+    //           <h2 style="color: #333;">New Message from your Portfolio Contact Form</h2>
+    //           <div style="background-color: #fff; padding: 20px; border-radius: 5px;">
+    //             <p><strong>Name:</strong> ${name}</p>
+    //             <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+    //             <p><strong>Message:</strong></p>
+    //             <p style="white-space: pre-wrap; border-left: 3px solid #ccc; padding-left: 15px;">${message}</p>
+    //           </div>
+    //         </div>
+    //       `,
+    //     });
+    //   }
+    // }
     
     return { message: 'Thank you for your message! I will get back to you soon.' };
   } catch (error) {
