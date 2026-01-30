@@ -57,7 +57,6 @@ export interface SiteContent {
     instagram?: string;
     email?: string;
   };
-  adminEmail?: string;
   aiSettings?: {
     geminiModel?: string;
     isAiFeatureEnabled?: boolean;
@@ -94,5 +93,3 @@ export interface ContactMessage {
     timestamp: Timestamp;
     isRead: boolean;
 }
-
-    
