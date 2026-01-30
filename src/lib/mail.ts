@@ -17,15 +17,18 @@ export const sendMail = async ({ to, subject, html }: MailPayload) => {
     throw new Error(errorMessage);
   }
 
-  // Using explicit SMTP configuration for Gmail
+  // Using explicit SMTP configuration for Gmail with relaxed TLS
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
-    secure: true, // true for 465, false for other ports
+    secure: true, // true for 465
     auth: {
       user: EMAIL_SERVER_USER,
       pass: EMAIL_SERVER_PASSWORD,
     },
+    tls: {
+      rejectUnauthorized: false
+    }
   });
 
   const mailOptions = {
@@ -39,9 +42,9 @@ export const sendMail = async ({ to, subject, html }: MailPayload) => {
     const info = await transporter.sendMail(mailOptions);
     console.log('Message sent: %s', info.messageId);
     return info;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending email via nodemailer:', error);
-    // Re-throwing the error to be caught by the server action
-    throw new Error('Could not send email. Please check server logs for details.');
+    // Re-throwing the original error for better debugging
+    throw new Error(error.message || 'Could not send email. Please check server logs for details.');
   }
 };
