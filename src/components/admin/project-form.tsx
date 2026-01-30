@@ -10,6 +10,7 @@ import { doc, setDoc, addDoc, collection, serverTimestamp, query, orderBy } from
 import { useFirestore, useDoc, useCollection } from '@/firebase';
 import { generateProjectDetails } from '@/ai/flows/generate-project-details';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { convertGoogleDriveLink } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -105,6 +106,11 @@ export default function ProjectForm({ project }: { project?: Project }) {
     control: form.control,
     name: "projectImages",
   });
+
+  const handleUrlBlur = (e: React.FocusEvent<HTMLInputElement>, field: any) => {
+    const convertedUrl = convertGoogleDriveLink(e.target.value);
+    field.onChange(convertedUrl);
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'imageUrl' | 'projectImages') => {
       const file = e.target.files?.[0];
@@ -239,7 +245,7 @@ export default function ProjectForm({ project }: { project?: Project }) {
                     <FormField control={form.control} name="imageUrl" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Image URL</FormLabel>
-                        <FormControl><Input placeholder="https://..." {...field} /></FormControl>
+                        <FormControl><Input placeholder="https://..." {...field} onBlur={(e) => handleUrlBlur(e, field)} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -277,7 +283,7 @@ export default function ProjectForm({ project }: { project?: Project }) {
                         render={({ field }) => (
                           <FormItem className="flex-grow">
                             <FormLabel>Image URL #{index + 1}</FormLabel>
-                            <FormControl><Input {...field} /></FormControl>
+                            <FormControl><Input {...field} onBlur={(e) => handleUrlBlur(e, field)} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}

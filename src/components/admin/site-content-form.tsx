@@ -8,6 +8,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useFirestore, useDoc } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { convertGoogleDriveLink } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -164,6 +165,11 @@ export default function SiteContentForm() {
     }
   }, [siteContent, form]);
 
+  const handleUrlBlur = (e: React.FocusEvent<HTMLInputElement>, field: any) => {
+    const convertedUrl = convertGoogleDriveLink(e.target.value);
+    field.onChange(convertedUrl);
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'aboutImageUrl' | `tools.${number}.iconUrl` ) => {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -283,7 +289,7 @@ export default function SiteContentForm() {
                         <FormItem>
                           <FormLabel>Image URL</FormLabel>
                           <FormControl>
-                            <Input placeholder="https://..." {...field} value={field.value ?? ''} />
+                            <Input placeholder="https://..." {...field} value={field.value ?? ''} onBlur={(e) => handleUrlBlur(e, field)} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -427,7 +433,7 @@ export default function SiteContentForm() {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel>Icon URL</FormLabel>
-                                    <FormControl><Input placeholder="https://..." {...field} /></FormControl>
+                                    <FormControl><Input placeholder="https://..." {...field} onBlur={(e) => handleUrlBlur(e, field)} /></FormControl>
                                     <FormMessage />
                                   </FormItem>
                                 )}
@@ -575,5 +581,3 @@ export default function SiteContentForm() {
     </Form>
   );
 }
-
-    

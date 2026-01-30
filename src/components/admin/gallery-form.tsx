@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { doc, setDoc, addDoc, collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useFirestore, useCollection } from '@/firebase';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { convertGoogleDriveLink } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,6 +80,11 @@ export default function GalleryForm({ image }: { image?: GalleryImage }) {
     resolver: zodResolver(formSchema),
     defaultValues,
   });
+
+  const handleUrlBlur = (e: React.FocusEvent<HTMLInputElement>, field: any) => {
+    const convertedUrl = convertGoogleDriveLink(e.target.value);
+    field.onChange(convertedUrl);
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -166,7 +172,7 @@ export default function GalleryForm({ image }: { image?: GalleryImage }) {
                   <FormItem>
                     <FormLabel>Image URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://..." {...field} />
+                      <Input placeholder="https://..." {...field} onBlur={(e) => handleUrlBlur(e, field)} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
