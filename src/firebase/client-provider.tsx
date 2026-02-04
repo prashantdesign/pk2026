@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, type ReactNode } from 'react';
-import LoadingLogo from '@/components/loading-logo';
 import { FirebaseProvider } from '@/firebase/provider';
 import { initializeFirebase } from '@/firebase';
 import type { FirebaseApp } from 'firebase/app';
@@ -31,7 +30,7 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
   if (!services) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
-            <LoadingLogo />
+            <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
         </div>
     );
   }

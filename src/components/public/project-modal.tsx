@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { Project } from '@/types';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -74,7 +74,14 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
             <ScrollArea className="flex-grow">
                 <div className="p-6 sm:p-8 space-y-8">
                     <div>
-                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">{project.title}</h2>
+                        <DialogTitle className="text-3xl font-bold tracking-tight mb-3 text-foreground">
+                            {project.title}
+                        </DialogTitle>
+
+                        <DialogDescription className="sr-only">
+                            Details about {project.title} project
+                        </DialogDescription>
+
                         {project.description && (
                             <p className="text-xl text-muted-foreground leading-relaxed">
                                 {project.description}
