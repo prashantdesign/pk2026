@@ -2,7 +2,7 @@
 
 import React from 'react';
 import TestimonialForm from '@/components/admin/testimonial-form';
-import { useFirestore, useDoc } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Testimonial } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,7 +11,7 @@ import { useParams } from 'next/navigation';
 export default function EditTestimonialPage() {
   const { id } = useParams();
   const firestore = useFirestore();
-  const docRef = firestore && id ? doc(firestore, 'testimonials', id as string) : null;
+  const docRef = useMemoFirebase(() => firestore && id ? doc(firestore, 'testimonials', id as string) : null, [firestore, id]);
   const { data: testimonial, loading, error } = useDoc<Testimonial>(docRef);
 
   if (loading) {
