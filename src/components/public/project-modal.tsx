@@ -28,19 +28,20 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
       <DialogContent className="max-w-5xl h-[90vh] p-0 gap-0 overflow-hidden flex flex-col sm:flex-row bg-background/95 backdrop-blur-xl border-border/50">
 
         {/* Left Side: Images */}
-        <div className="w-full sm:w-1/2 h-1/2 sm:h-full bg-black/5 relative flex items-center justify-center p-4">
+        <div className="w-full sm:w-1/2 h-[40vh] sm:h-full bg-black/5 relative flex items-center justify-center p-4">
             {allImages.length > 0 ? (
                 <Carousel className="w-full h-full flex items-center justify-center">
                     <CarouselContent className="h-full">
                         {allImages.map((img, index) => (
                             <CarouselItem key={index} className="h-full flex items-center justify-center pt-2 pb-2">
-                                <div className="relative w-full h-full min-h-[300px] sm:min-h-full">
+                                <div className="relative w-full h-full">
                                     <Image
                                         src={img}
                                         alt={`${project.title} image ${index + 1}`}
                                         fill
                                         className="object-contain"
                                         priority={index === 0}
+                                        sizes="(max-width: 768px) 100vw, 50vw"
                                     />
                                 </div>
                             </CarouselItem>
@@ -61,15 +62,14 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
         </div>
 
         {/* Right Side: Content */}
-        <div className="w-full sm:w-1/2 h-1/2 sm:h-full flex flex-col bg-background relative">
-             <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-4 top-4 z-10"
-                onClick={onClose}
-            >
-                <X className="h-4 w-4" />
-            </Button>
+        <div className="w-full sm:w-1/2 h-[60vh] sm:h-full flex flex-col bg-background relative">
+             {/* Note: DialogContent from UI library often includes a close button by default.
+                 If you see two close buttons, it's because of that.
+                 The default one in DialogContent is usually positioned absolutely at top-right.
+                 We will suppress our custom one if the library provides one, or ensure the library one is hidden via CSS if we prefer ours.
+                 Looking at the provided screenshot, there's an 'X' at top right which seems to be the default Radix/shadcn close button.
+                 So we will REMOVE this custom button to avoid duplication.
+             */}
 
             <ScrollArea className="flex-grow">
                 <div className="p-6 sm:p-8 space-y-8">
