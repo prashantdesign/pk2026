@@ -30,7 +30,7 @@ const Header = ({ siteName }: { siteName?: string }) => {
     >
       <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-6">
         <a href="#" className="flex items-center">
-          <Logo />
+          <Logo text={siteName} />
         </a>
         <nav className="hidden items-center gap-6 md:flex">
           {navItems.map((item) => (

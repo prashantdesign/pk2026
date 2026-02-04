@@ -21,15 +21,23 @@ import {
   LogOut,
   Images,
   FolderKanban,
+  MessageSquareQuote,
 } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { SiteContent } from '@/types';
 
 const AdminSidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
+  const firestore = useFirestore();
+
+  const siteContentRef = useMemoFirebase(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
+  const { data: siteContent } = useDoc<SiteContent>(siteContentRef);
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -55,6 +63,7 @@ const AdminSidebar = () => {
     { href: '/admin/categories', label: 'Categories', icon: FolderKanban },
     { href: '/admin/gallery', label: 'Gallery', icon: Images },
     { href: '/admin/projects', label: 'Projects', icon: Briefcase },
+    { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote },
     { href: '/admin/messages', label: 'Messages', icon: Mails },
     { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
@@ -62,7 +71,7 @@ const AdminSidebar = () => {
   return (
     <Sidebar>
       <SidebarHeader>
-        <Logo />
+        <Logo text={siteContent?.siteName} />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
