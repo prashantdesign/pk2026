@@ -108,11 +108,6 @@ export default function TestimonialSection() {
                  </Button>
             </div>
 
-            {/* Pagination Indicator */}
-            <div className="flex justify-center mt-8 text-sm font-medium text-muted-foreground">
-                {selectedIndex + 1} / {testimonials.length}
-            </div>
-
         </div>
       </div>
     </section>

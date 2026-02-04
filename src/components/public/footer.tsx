@@ -12,7 +12,7 @@ const Footer = ({ content }: { content: SiteContent | null }) => {
   return (
     <footer className="border-t">
       <div className="container mx-auto px-4 md:px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-        <Logo />
+        <Logo text={content?.siteName} />
         {hasSocials && (
             <div className="flex items-center gap-4">
             {socialLinks?.linkedin && <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-muted-foreground hover:text-primary"><Linkedin /></a>}

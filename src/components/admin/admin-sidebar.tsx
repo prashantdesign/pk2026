@@ -25,12 +25,19 @@ import {
 } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { SiteContent } from '@/types';
 
 const AdminSidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
+  const firestore = useFirestore();
+
+  const siteContentRef = useMemoFirebase(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
+  const { data: siteContent } = useDoc<SiteContent>(siteContentRef);
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -64,7 +71,7 @@ const AdminSidebar = () => {
   return (
     <Sidebar>
       <SidebarHeader>
-        <Logo />
+        <Logo text={siteContent?.siteName} />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
