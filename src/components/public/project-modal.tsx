@@ -30,11 +30,11 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
         {/* Left Side: Images */}
         <div className="w-full sm:w-1/2 h-[40vh] sm:h-full bg-black/5 relative flex items-center justify-center p-4">
             {allImages.length > 0 ? (
-                <Carousel className="w-full h-full flex items-center justify-center">
-                    <CarouselContent className="h-full">
+                <Carousel className="w-full h-full">
+                    <CarouselContent className="h-full ml-0">
                         {allImages.map((img, index) => (
-                            <CarouselItem key={index} className="h-full flex items-center justify-center pt-2 pb-2">
-                                <div className="relative w-full h-full">
+                            <CarouselItem key={index} className="h-full pl-0 relative">
+                                <div className="relative w-full h-full min-h-[300px]">
                                     <Image
                                         src={img}
                                         alt={`${project.title} image ${index + 1}`}
