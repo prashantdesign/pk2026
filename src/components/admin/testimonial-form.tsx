@@ -32,28 +32,30 @@ const formSchema = z.object({
 
 type TestimonialFormValues = z.infer<typeof formSchema>;
 
-function saveTestimonial(firestore: any, testimonialId: string | undefined, data: any) {
+async function saveTestimonial(firestore: any, testimonialId: string | undefined, data: any) {
   const testimonialData = { ...data, updatedAt: serverTimestamp() };
   if (testimonialId) {
     const testimonialRef = doc(firestore, 'testimonials', testimonialId);
-    setDoc(testimonialRef, testimonialData, { merge: true }).catch(async (serverError: any) => {
+    await setDoc(testimonialRef, testimonialData, { merge: true }).catch(async (serverError: any) => {
         const permissionError = new FirestorePermissionError({
           path: testimonialRef.path,
           operation: 'update',
           requestResourceData: testimonialData,
         });
         errorEmitter.emit('permission-error', permissionError);
+        throw serverError;
       });
   } else {
     const collRef = collection(firestore, 'testimonials');
     const finalData = { ...testimonialData, createdAt: serverTimestamp() };
-    addDoc(collRef, finalData).catch(async (serverError: any) => {
+    await addDoc(collRef, finalData).catch(async (serverError: any) => {
         const permissionError = new FirestorePermissionError({
           path: collRef.path,
           operation: 'create',
           requestResourceData: finalData,
         });
         errorEmitter.emit('permission-error', permissionError);
+        throw serverError;
       });
   }
 }
@@ -101,20 +103,27 @@ export default function TestimonialForm({ testimonial }: { testimonial?: Testimo
       }
   }
 
-  const onSubmit = (data: TestimonialFormValues) => {
+  const onSubmit = async (data: TestimonialFormValues) => {
     if(!firestore) {
         toast({ variant: "destructive", title: "Firestore not available" });
         return;
     }
     setIsSaving(true);
-    saveTestimonial(firestore, testimonial?.id, data);
-    toast({
-      title: testimonial ? "Testimonial Updated" : "Testimonial Created",
-      description: "Your testimonial has been saved successfully.",
-    });
-    router.push('/admin/testimonials');
-    router.refresh();
-    setIsSaving(false);
+    try {
+        await saveTestimonial(firestore, testimonial?.id, data);
+        toast({
+          title: testimonial ? "Testimonial Updated" : "Testimonial Created",
+          description: "Your testimonial has been saved successfully.",
+        });
+        router.push('/admin/testimonials');
+        router.refresh();
+    } catch (error) {
+        // Error already handled in saveTestimonial via emitter or we can log it here
+        console.error("Failed to save testimonial", error);
+        toast({ variant: "destructive", title: "Failed to save", description: "An error occurred while saving." });
+    } finally {
+        setIsSaving(false);
+    }
   };
 
   const imageUrl = form.watch('imageUrl');
