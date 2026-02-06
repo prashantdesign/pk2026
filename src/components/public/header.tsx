@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import Logo from '@/components/logo';
+import { ModeToggle } from '@/components/mode-toggle';
 
 const Header = ({ siteName }: { siteName?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,6 +44,7 @@ const Header = ({ siteName }: { siteName?: string }) => {
               {item.label}
             </a>
           ))}
+          <ModeToggle />
         </nav>
         <button
           className="md:hidden"
@@ -65,6 +67,7 @@ const Header = ({ siteName }: { siteName?: string }) => {
                 {item.label}
               </a>
             ))}
+            <ModeToggle />
           </nav>
         </div>
       )}

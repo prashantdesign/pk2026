@@ -3,14 +3,14 @@
 import React, { useMemo } from 'react';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import type { Project, ContactMessage } from '@/types';
+import type { Project, ContactMessage, Testimonial } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, subDays, startOfDay } from 'date-fns';
 import { Badge } from '../ui/badge';
-import { Briefcase, Mail, MailOpen } from 'lucide-react';
+import { Briefcase, Mail, MailOpen, MessageSquareQuote } from 'lucide-react';
 
 export default function DashboardClient() {
   const firestore = useFirestore();
@@ -23,11 +23,17 @@ export default function DashboardClient() {
     firestore ? query(collection(firestore, 'contactMessages'), orderBy('timestamp', 'desc')) : null
   , [firestore]);
 
+  const testimonialsQuery = useMemoFirebase(() =>
+    firestore ? query(collection(firestore, 'testimonials')) : null
+  , [firestore]);
+
   const { data: projects, isLoading: projectsLoading } = useCollection<Project>(projectsQuery);
   const { data: messages, isLoading: messagesLoading } = useCollection<ContactMessage>(messagesQuery);
+  const { data: testimonials, isLoading: testimonialsLoading } = useCollection<Testimonial>(testimonialsQuery);
 
   const totalProjects = useMemo(() => projects?.length ?? 0, [projects]);
   const totalMessages = useMemo(() => messages?.length ?? 0, [messages]);
+  const totalTestimonials = useMemo(() => testimonials?.length ?? 0, [testimonials]);
   const unreadMessages = useMemo(() => messages?.filter(m => !m.isRead).length ?? 0, [messages]);
   
   const recentMessages = useMemo(() => messages?.slice(0, 5) ?? [], [messages]);
@@ -56,10 +62,11 @@ export default function DashboardClient() {
     return last7Days;
   }, [messages]);
 
-  if (projectsLoading || messagesLoading) {
+  if (projectsLoading || messagesLoading || testimonialsLoading) {
     return (
       <div className="space-y-8">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Skeleton className="h-32" />
           <Skeleton className="h-32" />
           <Skeleton className="h-32" />
           <Skeleton className="h-32" />
@@ -72,13 +79,20 @@ export default function DashboardClient() {
 
   return (
     <div className="space-y-8">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent><p className="text-4xl font-bold">{totalProjects}</p></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Testimonials</CardTitle>
+            <MessageSquareQuote className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent><p className="text-4xl font-bold">{totalTestimonials}</p></CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

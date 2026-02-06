@@ -19,6 +19,7 @@ import GallerySection from '@/components/public/gallery-section';
 import SkillsSection from '@/components/public/skills-section';
 import ToolsSection from '@/components/public/tools-section';
 import TestimonialSection from '@/components/public/testimonial-section';
+import { ScrollToTop } from '@/components/public/scroll-to-top';
 
 export default function Home() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -93,6 +94,7 @@ export default function Home() {
           onClose={handleCloseModal}
         />
       )}
+      <ScrollToTop />
     </div>
   );
 }
