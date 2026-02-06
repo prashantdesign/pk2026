@@ -1,0 +1,28 @@
+
+> nextn@0.1.0 dev
+> next dev --turbopack -p 9002
+
+   ▲ Next.js 15.5.9 (Turbopack)
+   - Local:        http://localhost:9002
+   - Network:      http://192.168.0.2:9002
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 2.9s
+ ○ Compiling /test-carousel ...
+ ✓ Compiled /test-carousel in 15.7s
+ GET /test-carousel 200 in 16878ms
+ GET /test-carousel 200 in 188ms
+ ⨯ [Error [FirebaseError]: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+  code: 'invalid-argument',
+  customData: undefined,
+  toString: [Function (anonymous)],
+  digest: '1366593258'
+}
+ GET /test-carousel 500 in 516ms
+ GET /test-carousel 200 in 402ms
+ ✓ Compiled in 211ms
+ ✓ Compiled /test-carousel in 56ms
+ GET /test-carousel 200 in 460ms
+ GET /test-carousel 200 in 377ms
+ ✓ Compiled in 289ms
