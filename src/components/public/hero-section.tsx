@@ -47,21 +47,41 @@ const HeroSection = ({ content }: { content: SiteContent | null }) => {
             </p>
           </FadeIn>
 
-          {content?.ctaText && content.ctaLink && (
-            <FadeIn delay={1.8} direction="up">
+          <FadeIn delay={1.8} direction="up">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              {content?.ctaText && content.ctaLink && (
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    asChild
+                    size="lg"
+                    className="h-12 px-8 text-lg rounded-full shadow-lg hover:shadow-primary/25"
+                  >
+                    <a href={content.ctaLink}>
+                      {content.ctaText}
+                      <ArrowDown className="ml-2 h-5 w-5 animate-bounce" />
+                    </a>
+                  </Button>
+                </motion.div>
+              )}
+
               <motion.div
-                 whileHover={{ scale: 1.05 }}
-                 whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Button asChild size="lg" className="h-12 px-8 text-lg rounded-full shadow-lg hover:shadow-primary/25">
-                  <a href={content.ctaLink}>
-                    {content.ctaText}
-                    <ArrowDown className="ml-2 h-5 w-5 animate-bounce" />
-                  </a>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="h-12 px-8 text-lg rounded-full shadow-sm border-2"
+                >
+                  <a href="#contact">Contact Me</a>
                 </Button>
               </motion.div>
-            </FadeIn>
-          )}
+            </div>
+          </FadeIn>
         </div>
       </div>
     </section>

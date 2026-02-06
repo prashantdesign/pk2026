@@ -1,73 +1,44 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-interface LoadingLogoProps {
-  className?: string;
-  siteName?: string;
-}
-
-const LoadingLogo = ({ className, siteName = "PK.Design" }: LoadingLogoProps) => {
-  // Calculate width based on character count approx.
-  // Average char width for 50px bold font is roughly 30-35px.
-  // We add some padding.
-  const charCount = siteName.length;
-  // Increase width estimate to ensure text fits
-  const calculatedWidth = Math.max(160, charCount * 40);
-  const viewBoxWidth = calculatedWidth;
-  const centerY = 55;
-  const centerX = viewBoxWidth / 2;
-
-  const lastDotIndex = siteName.lastIndexOf('.');
-  const hasDot = lastDotIndex !== -1;
-
-  const mainText = hasDot ? siteName.substring(0, lastDotIndex) : siteName;
-  const dotText = hasDot ? '.' + siteName.substring(lastDotIndex + 1) : '';
-
+const LoadingLogo = ({ className }: { className?: string }) => {
   return (
     <div className={cn("flex items-center justify-center", className)}>
-      <svg width={calculatedWidth} height="80" viewBox={`0 0 ${viewBoxWidth} 80`}>
+      <svg width="150" height="70" viewBox="0 0 150 70">
         <style>
           {`
             .loading-text {
               font-family: var(--font-inter), sans-serif;
-              font-size: 50px;
+              font-size: 60px;
               font-weight: 700;
-              letter-spacing: -0.02em;
+              letter-spacing: -0.05em;
             }
-            .text-main {
+            .text-pk {
               fill: transparent;
               stroke: hsl(var(--foreground));
-              stroke-width: 2px;
-              stroke-dasharray: 1000;
-              stroke-dashoffset: 1000;
-              animation: draw-letters 3s ease-in-out infinite;
+              stroke-width: 1.5;
+              stroke-dasharray: 255;
+              stroke-dashoffset: 255;
+              animation: draw-letters 2.5s ease-in-out infinite;
             }
-            .text-accent {
+            .text-dot {
               fill: hsl(var(--primary));
               opacity: 0;
-              animation: dot-pulse 3s ease-in-out infinite;
-              font-size: 50px;
+              animation: dot-pulse 2.5s ease-in-out infinite;
             }
 
             @keyframes draw-letters {
               0% {
-                stroke-dashoffset: 1000;
-                fill: transparent;
+                stroke-dashoffset: 255;
               }
               30% {
                 stroke-dashoffset: 0;
-                fill: transparent;
-              }
-              50% {
-                fill: hsl(var(--foreground));
               }
               70% {
                 stroke-dashoffset: 0;
-                fill: hsl(var(--foreground));
               }
               90%, 100% {
-                stroke-dashoffset: -1000;
-                fill: transparent;
+                stroke-dashoffset: -255;
                 opacity: 0;
               }
             }
@@ -75,15 +46,14 @@ const LoadingLogo = ({ className, siteName = "PK.Design" }: LoadingLogoProps) =>
             @keyframes dot-pulse {
               0%, 30% {
                 opacity: 0;
-                transform: scale(0.5);
-                transform-origin: center;
+                transform: scale(0.8);
               }
               40% {
                 opacity: 1;
-                transform: scale(1.2);
+                transform: scale(1);
               }
               50% {
-                transform: scale(1);
+                transform: scale(1.2);
               }
               70% {
                 opacity: 1;
@@ -95,10 +65,8 @@ const LoadingLogo = ({ className, siteName = "PK.Design" }: LoadingLogoProps) =>
             }
           `}
         </style>
-        <text className="loading-text" x={centerX} y={centerY} textAnchor="middle">
-            <tspan className="text-main">{mainText}</tspan>
-            {hasDot && <tspan className="text-accent">{dotText}</tspan>}
-        </text>
+        <text className="loading-text text-pk" x="10" y="55">PK</text>
+        <text className="loading-text text-dot" x="92" y="55">.</text>
       </svg>
     </div>
   );
