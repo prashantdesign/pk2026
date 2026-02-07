@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useInView, useMotionValue, useSpring } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { useInView, useMotionValue, useSpring, useTransform, motion } from 'framer-motion';
 
 export function Counter({ value, className }: { value: string; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -12,25 +12,18 @@ export function Counter({ value, className }: { value: string; className?: strin
   });
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
+  // Extract number and suffix safely
+  const numericValue = parseInt(value.replace(/[^0-9]/g, '')) || 0;
+  const suffix = value.replace(/[0-9]/g, '');
+
   useEffect(() => {
     if (isInView) {
-      // Extract numeric part if any (e.g., "50+" -> 50)
-      const numericValue = parseInt(value.replace(/[^0-9]/g, ''));
-      if (!isNaN(numericValue)) {
-        motionValue.set(numericValue);
-      }
+      motionValue.set(numericValue);
     }
-  }, [isInView, motionValue, value]);
+  }, [isInView, motionValue, numericValue]);
 
-  useEffect(() => {
-    springValue.on("change", (latest) => {
-      if (ref.current) {
-        // If the original value had a suffix like "+", append it back
-        const suffix = value.replace(/[0-9]/g, '');
-        ref.current.textContent = Math.round(latest).toString() + suffix;
-      }
-    });
-  }, [springValue, value]);
+  // Transform the spring value to a string with the suffix
+  const displayValue = useTransform(springValue, (latest) => Math.round(latest).toString() + suffix);
 
-  return <span ref={ref} className={className} />;
+  return <motion.span ref={ref} className={className}>{displayValue}</motion.span>;
 }

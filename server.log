@@ -26,3 +26,35 @@
  GET /test-carousel 200 in 460ms
  GET /test-carousel 200 in 377ms
  ✓ Compiled in 289ms
+ ○ Compiling / ...
+ ✓ Compiled / in 11.7s
+ ⨯ ./src/components/public/gallery-section.tsx:121:6
+Parsing ecmascript source code failed
+[0m [90m 119 |[39m       )}
+ [90m 120 |[39m       [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 121 |[39m     [33m<[39m[33m/[39m[33msection[39m[33m>[39m
+ [90m     |[39m      [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 122 |[39m   )[33m;[39m
+ [90m 123 |[39m }
+ [90m 124 |[39m[0m
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./src/components/public/gallery-section.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/public/gallery-section.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 3.7s
+ GET / 500 in 17840ms
+ ✓ Compiled in 219ms
+ ✓ Compiled / in 45ms
+ GET / 200 in 800ms
