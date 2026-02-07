@@ -58,3 +58,5 @@ Import traces:
  ✓ Compiled in 219ms
  ✓ Compiled / in 45ms
  GET / 200 in 800ms
+ GET / 200 in 565ms
+ GET / 200 in 187ms

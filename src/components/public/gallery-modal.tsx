@@ -62,12 +62,6 @@ export function GalleryModal({ images, initialIndex, isOpen, onClose }: GalleryM
                     />
                   </div>
                 </div>
-                {/* Title Overlay */}
-                <div className="absolute bottom-8 left-0 right-0 text-center p-4">
-                    <h3 className="text-white text-lg font-semibold drop-shadow-md bg-black/40 inline-block px-4 py-2 rounded-full backdrop-blur-sm">
-                        {img.title}
-                    </h3>
-                </div>
               </CarouselItem>
             ))}
           </CarouselContent>
