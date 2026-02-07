@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import type { Project, ContactMessage, Testimonial } from '@/types';
@@ -10,10 +11,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, subDays, startOfDay } from 'date-fns';
 import { Badge } from '../ui/badge';
-import { Briefcase, Mail, MailOpen, MessageSquareQuote } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Briefcase, Mail, MailOpen, MessageSquareQuote, Plus, ArrowRight } from 'lucide-react';
 
 export default function DashboardClient() {
   const firestore = useFirestore();
+  const router = useRouter();
 
   const projectsQuery = useMemoFirebase(() => 
     firestore ? query(collection(firestore, 'projects')) : null
@@ -79,34 +82,67 @@ export default function DashboardClient() {
 
   return (
     <div className="space-y-8">
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-4">
+        <Button onClick={() => router.push('/admin/projects/new')} className="gap-2">
+            <Plus className="h-4 w-4" /> Add Project
+        </Button>
+        <Button onClick={() => router.push('/admin/testimonials/new')} variant="secondary" className="gap-2">
+            <Plus className="h-4 w-4" /> Add Testimonial
+        </Button>
+        <Button onClick={() => router.push('/admin/gallery/new')} variant="outline" className="gap-2">
+            <Plus className="h-4 w-4" /> Add Gallery Image
+        </Button>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="cursor-pointer hover:bg-secondary/50 transition-colors" onClick={() => router.push('/admin/projects')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent><p className="text-4xl font-bold">{totalProjects}</p></CardContent>
+          <CardContent>
+            <p className="text-4xl font-bold">{totalProjects}</p>
+            <p className="text-xs text-muted-foreground mt-2 flex items-center">
+                Manage Projects <ArrowRight className="h-3 w-3 ml-1" />
+            </p>
+          </CardContent>
         </Card>
-        <Card>
+        <Card className="cursor-pointer hover:bg-secondary/50 transition-colors" onClick={() => router.push('/admin/testimonials')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Testimonials</CardTitle>
             <MessageSquareQuote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent><p className="text-4xl font-bold">{totalTestimonials}</p></CardContent>
+          <CardContent>
+            <p className="text-4xl font-bold">{totalTestimonials}</p>
+            <p className="text-xs text-muted-foreground mt-2 flex items-center">
+                Manage Testimonials <ArrowRight className="h-3 w-3 ml-1" />
+            </p>
+          </CardContent>
         </Card>
-        <Card>
+        <Card className="cursor-pointer hover:bg-secondary/50 transition-colors" onClick={() => router.push('/admin/messages')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
             <Mail className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent><p className="text-4xl font-bold">{totalMessages}</p></CardContent>
+          <CardContent>
+            <p className="text-4xl font-bold">{totalMessages}</p>
+             <p className="text-xs text-muted-foreground mt-2 flex items-center">
+                View All <ArrowRight className="h-3 w-3 ml-1" />
+            </p>
+          </CardContent>
         </Card>
-        <Card>
+        <Card className="cursor-pointer hover:bg-secondary/50 transition-colors" onClick={() => router.push('/admin/messages?filter=unread')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Unread Messages</CardTitle>
             <MailOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent><p className="text-4xl font-bold">{unreadMessages}</p></CardContent>
+          <CardContent>
+            <p className="text-4xl font-bold">{unreadMessages}</p>
+            <p className="text-xs text-muted-foreground mt-2 flex items-center">
+                View Unread <ArrowRight className="h-3 w-3 ml-1" />
+            </p>
+          </CardContent>
         </Card>
       </div>
 
@@ -118,21 +154,24 @@ export default function DashboardClient() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis allowDecimals={false}/>
-              <Tooltip />
-              <Bar dataKey="count" fill="hsl(var(--primary))" />
+              <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+              <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
       
       <Card>
-        <CardHeader><CardTitle>Recent Messages</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Recent Messages</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => router.push('/admin/messages')}>View All</Button>
+        </CardHeader>
         <CardContent>
           {/* Mobile View */}
           <div className="grid gap-4 md:hidden">
             {recentMessages.length > 0 ? recentMessages.map(msg => (
-                <Card key={msg.id}>
-                    <CardHeader>
+                <Card key={msg.id} className="bg-muted/50">
+                    <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                             <div>
                                 <CardTitle className="text-base">{msg.name}</CardTitle>
@@ -141,8 +180,8 @@ export default function DashboardClient() {
                             <Badge variant={msg.isRead ? 'secondary' : 'default'}>{msg.isRead ? 'Read' : 'Unread'}</Badge>
                         </div>
                     </CardHeader>
-                    <CardContent>
-                        <p className="text-sm line-clamp-3">{msg.message}</p>
+                    <CardContent className="pb-2">
+                        <p className="text-sm line-clamp-2">{msg.message}</p>
                     </CardContent>
                     <CardFooter>
                          <p className="text-xs text-muted-foreground">{msg.timestamp ? format(msg.timestamp.toDate(), 'PP') : 'N/A'}</p>
@@ -166,9 +205,9 @@ export default function DashboardClient() {
               </TableHeader>
               <TableBody>
                 {recentMessages.length > 0 ? recentMessages.map(msg => (
-                  <TableRow key={msg.id}>
-                    <TableCell>{msg.name}</TableCell>
-                    <TableCell className="max-w-sm truncate">{msg.message}</TableCell>
+                  <TableRow key={msg.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/admin/messages/${msg.id}`)}>
+                    <TableCell className="font-medium">{msg.name}</TableCell>
+                    <TableCell className="max-w-sm truncate text-muted-foreground">{msg.message}</TableCell>
                     <TableCell>{msg.timestamp ? format(msg.timestamp.toDate(), 'PP') : 'N/A'}</TableCell>
                     <TableCell><Badge variant={msg.isRead ? 'secondary' : 'default'}>{msg.isRead ? 'Read' : 'Unread'}</Badge></TableCell>
                   </TableRow>

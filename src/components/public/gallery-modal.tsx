@@ -29,7 +29,10 @@ export function GalleryModal({ images, initialIndex, isOpen, onClose }: GalleryM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-screen-xl h-screen md:h-[90vh] p-0 border-none bg-background/40 backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-none">
+      <DialogContent
+        hideCloseButton
+        className="max-w-screen-xl h-screen md:h-[90vh] p-0 border-none bg-transparent shadow-none flex items-center justify-center overflow-hidden"
+      >
         <DialogClose className="absolute right-8 top-8 rounded-full p-2 bg-background/50 hover:bg-background/80 transition-colors z-50 text-foreground">
           <X className="h-6 w-6" />
           <span className="sr-only">Close</span>
@@ -39,17 +42,7 @@ export function GalleryModal({ images, initialIndex, isOpen, onClose }: GalleryM
           <CarouselContent className="h-full ml-0">
             {images.map((img) => (
               <CarouselItem key={img.id} className="h-full pl-0 flex items-center justify-center relative">
-                 {/* Blurred Background Layer for "Smart Fill" effect */}
-                 <div className="absolute inset-0 w-full h-full -z-10">
-                    <Image
-                        src={img.imageUrl}
-                        alt=""
-                        fill
-                        className="object-cover opacity-20 blur-3xl scale-110"
-                        aria-hidden="true"
-                    />
-                </div>
-
+                {/* Image container */}
                 <div className="relative w-full h-full max-h-[85vh] p-4 flex items-center justify-center">
                   <div className="relative w-full h-full">
                     <Image
