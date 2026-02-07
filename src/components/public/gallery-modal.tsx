@@ -29,8 +29,8 @@ export function GalleryModal({ images, initialIndex, isOpen, onClose }: GalleryM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-screen-xl h-screen md:h-[90vh] p-0 border-none bg-black/95 backdrop-blur-xl flex items-center justify-center overflow-hidden">
-        <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-50 text-white">
+      <DialogContent className="max-w-screen-xl h-screen md:h-[90vh] p-0 border-none bg-background/40 backdrop-blur-xl flex items-center justify-center overflow-hidden shadow-none">
+        <DialogClose className="absolute right-8 top-8 rounded-full p-2 bg-background/50 hover:bg-background/80 transition-colors z-50 text-foreground">
           <X className="h-6 w-6" />
           <span className="sr-only">Close</span>
         </DialogClose>
