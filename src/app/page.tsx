@@ -20,15 +20,21 @@ import SkillsSection from '@/components/public/skills-section';
 import ToolsSection from '@/components/public/tools-section';
 import TestimonialSection from '@/components/public/testimonial-section';
 import { ScrollToTop } from '@/components/public/scroll-to-top';
+import { useAnalytics } from '@/hooks/use-analytics';
 
 export default function Home() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const firestore = useFirestore();
+  const { trackPageView } = useAnalytics();
 
   const siteContentRef = useMemoFirebase(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
   const { data: siteContent, loading } = useDoc<SiteContent>(siteContentRef);
+
+  useEffect(() => {
+    trackPageView('home');
+  }, [trackPageView]);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -46,6 +52,8 @@ export default function Home() {
   }, [router]);
 
   const handleProjectClick = (project: Project) => {
+    // Track project view when modal opens
+    trackPageView('project', project.id, project.title);
     setSelectedProject(project);
     setIsModalOpen(true);
   };

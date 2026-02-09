@@ -1,4 +1,5 @@
 'use client';
+
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
@@ -22,6 +23,7 @@ import {
   Images,
   FolderKanban,
   MessageSquareQuote,
+  LineChart,
 } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
@@ -59,6 +61,7 @@ const AdminSidebar = () => {
 
   const menuItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/insights', label: 'Insights', icon: LineChart },
     { href: '/admin/site-content', label: 'Site Content', icon: Palette },
     { href: '/admin/categories', label: 'Categories', icon: FolderKanban },
     { href: '/admin/gallery', label: 'Gallery', icon: Images },
