@@ -12,6 +12,8 @@ export interface Project {
   problem?: string;
   solution?: string;
   outcome?: string;
+  liveUrl?: string;
+  repoUrl?: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }

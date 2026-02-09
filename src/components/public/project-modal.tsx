@@ -5,9 +5,11 @@ import type { Project } from '@/types';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { Icons } from '../icons';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ExternalLink, Github } from 'lucide-react';
 
 interface ProjectModalProps {
   project: Project | null;
@@ -96,6 +98,24 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                                 {project.description}
                             </p>
                         )}
+
+                        {/* Links */}
+                        <div className="flex gap-3 mt-6">
+                            {project.liveUrl && (
+                                <Button size="sm" asChild>
+                                    <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink className="h-4 w-4 mr-2" /> Visit Live Site
+                                    </a>
+                                </Button>
+                            )}
+                            {project.repoUrl && (
+                                <Button size="sm" variant="outline" asChild>
+                                    <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">
+                                        <Github className="h-4 w-4 mr-2" /> View Code
+                                    </a>
+                                </Button>
+                            )}
+                        </div>
 
                         {/* Tools */}
                         <div className="flex flex-wrap gap-2 mt-6">
