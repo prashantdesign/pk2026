@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase';
 import { FirebaseErrorListener } from '@/components/firebase-error-listener';
+import { ScrollProgress } from '@/components/ui/scroll-progress';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-body antialiased`}>
         <FirebaseClientProvider>
           <ThemeProvider>
+            <ScrollProgress />
             {children}
             <Toaster />
             <FirebaseErrorListener />

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import { Skeleton } from '../ui/skeleton';
+import { GalleryModal } from './gallery-modal';
 
 interface GallerySectionProps {
   content: SiteContent | null;
@@ -16,6 +17,7 @@ interface GallerySectionProps {
 export default function GallerySection({ content }: GallerySectionProps) {
   const firestore = useFirestore();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   const imagesQuery = useMemoFirebase(() => 
     firestore ? query(collection(firestore, 'galleryImages'), orderBy('order', 'asc')) : null
@@ -80,7 +82,7 @@ export default function GallerySection({ content }: GallerySectionProps) {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {filteredImages.map((image, index) => (
                         <div key={image.id} className={`animate-fade-in-up`} style={{animationDelay: `${600 + index * 100}ms`}}>
-                        <Card className="overflow-hidden group cursor-pointer">
+                        <Card className="overflow-hidden group cursor-pointer" onClick={() => setSelectedImageIndex(index)}>
                             <CardContent className="p-0 relative aspect-square">
                             <Image
                                 src={image.imageUrl}
@@ -104,7 +106,17 @@ export default function GallerySection({ content }: GallerySectionProps) {
                 )}
             </>
         )}
+
       </div>
+
+      {filteredImages.length > 0 && selectedImageIndex !== null && (
+        <GalleryModal
+            images={filteredImages}
+            initialIndex={selectedImageIndex}
+            isOpen={selectedImageIndex !== null}
+            onClose={() => setSelectedImageIndex(null)}
+        />
+      )}
     </section>
   );
 }
