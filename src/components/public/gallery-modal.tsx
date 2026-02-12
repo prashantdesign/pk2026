@@ -1,0 +1,71 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
+import Image from 'next/image';
+import type { GalleryImage } from '@/types';
+import { X } from 'lucide-react';
+
+interface GalleryModalProps {
+  images: GalleryImage[];
+  initialIndex: number;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function GalleryModal({ images, initialIndex, isOpen, onClose }: GalleryModalProps) {
+  const [api, setApi] = useState<CarouselApi>();
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+    // Jump to the clicked image
+    api.scrollTo(initialIndex, true);
+  }, [api, initialIndex, isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent
+        hideCloseButton
+        className="max-w-screen-xl h-screen md:h-[90vh] p-0 border-none bg-transparent shadow-none flex items-center justify-center overflow-hidden"
+      >
+        <DialogClose className="absolute right-8 top-8 rounded-full p-2 bg-background/50 hover:bg-background/80 transition-colors z-50 text-foreground">
+          <X className="h-6 w-6" />
+          <span className="sr-only">Close</span>
+        </DialogClose>
+
+        <Carousel setApi={setApi} className="w-full h-full" opts={{ loop: true }}>
+          <CarouselContent className="h-full ml-0">
+            {images.map((img) => (
+              <CarouselItem key={img.id} className="h-full pl-0 flex items-center justify-center relative">
+                {/* Image container */}
+                <div className="relative w-full h-full max-h-[85vh] p-4 flex items-center justify-center">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={img.imageUrl}
+                      alt={img.title}
+                      fill
+                      className="object-contain"
+                      sizes="100vw"
+                      priority
+                    />
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {images.length > 1 && (
+            <>
+              <CarouselPrevious className="left-4 bg-white/10 hover:bg-white/20 text-white border-none h-12 w-12" />
+              <CarouselNext className="right-4 bg-white/10 hover:bg-white/20 text-white border-none h-12 w-12" />
+            </>
+          )}
+        </Carousel>
+      </DialogContent>
+    </Dialog>
+  );
+}

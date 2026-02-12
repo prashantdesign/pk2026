@@ -6,6 +6,7 @@ import type { Project, SiteContent } from '@/types';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
+import LoadingLogo from '@/components/loading-logo';
 import Header from '@/components/public/header';
 import HeroSection from '@/components/public/hero-section';
 import AboutSection from '@/components/public/about-section';
@@ -17,15 +18,23 @@ import StatsSection from '@/components/public/stats-section';
 import GallerySection from '@/components/public/gallery-section';
 import SkillsSection from '@/components/public/skills-section';
 import ToolsSection from '@/components/public/tools-section';
+import TestimonialSection from '@/components/public/testimonial-section';
+import { ScrollToTop } from '@/components/public/scroll-to-top';
+import { useAnalytics } from '@/hooks/use-analytics';
 
 export default function Home() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const firestore = useFirestore();
+  const { trackPageView } = useAnalytics();
 
   const siteContentRef = useMemoFirebase(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
   const { data: siteContent, loading } = useDoc<SiteContent>(siteContentRef);
+
+  useEffect(() => {
+    trackPageView('home');
+  }, [trackPageView]);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -43,6 +52,8 @@ export default function Home() {
   }, [router]);
 
   const handleProjectClick = (project: Project) => {
+    // Track project view when modal opens
+    trackPageView('project', project.id, project.title);
     setSelectedProject(project);
     setIsModalOpen(true);
   };
@@ -55,7 +66,7 @@ export default function Home() {
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
-        <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+        <LoadingLogo />
       </div>
     );
   }
@@ -80,6 +91,7 @@ export default function Home() {
         {(siteContent?.isToolsSectionVisible ?? true) && <ToolsSection content={siteContent} />}
         {(siteContent?.isGallerySectionVisible ?? true) && <GallerySection content={siteContent} />}
         {(siteContent?.isPortfolioSectionVisible ?? true) && <PortfolioSection content={siteContent} onProjectClick={handleProjectClick} />}
+        <TestimonialSection />
         <ContactSection />
       </main>
       <Footer content={siteContent} />
@@ -90,8 +102,7 @@ export default function Home() {
           onClose={handleCloseModal}
         />
       )}
+      <ScrollToTop />
     </div>
   );
 }
-
-    

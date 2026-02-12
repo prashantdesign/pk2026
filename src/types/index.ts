@@ -12,6 +12,8 @@ export interface Project {
   problem?: string;
   solution?: string;
   outcome?: string;
+  liveUrl?: string;
+  repoUrl?: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
@@ -92,4 +94,16 @@ export interface ContactMessage {
     message: string;
     timestamp: Timestamp;
     isRead: boolean;
+}
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  company?: string;
+  content: string;
+  imageUrl?: string;
+  order: number;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }

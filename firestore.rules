@@ -16,6 +16,8 @@
  * - /projects: Contains the individual portfolio projects.
  * - /galleryImages: Stores images for the public gallery.
  * - /contactMessages: A private collection to store user-submitted contact form messages.
+ * - /daily_stats: Stores daily traffic counters.
+ * - /project_stats: Stores project-specific view counters.
  *
  * Key Security Decisions:
  * - Admin Role Assumption: There is no explicit admin role system defined. For rapid prototyping, we treat any user authenticated via a non-anonymous provider (e.g., email/password) as an administrator with full write privileges. This should be replaced with a more robust system (like custom claims) for production.
@@ -124,6 +126,28 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow create: if isValidContactMessageCreate();
       allow update, delete: if isAdmin() && isExistingDoc();
+    }
+
+    /**
+     * @description Stores daily traffic stats. Publicly writeable (counters), but only readable by admins.
+     * @path /daily_stats/{date}
+     */
+    match /daily_stats/{date} {
+      // Anyone (even public) can increment counters
+      allow create, update: if true;
+      // Only admins can see the data
+      allow read: if isAdmin();
+    }
+
+    /**
+     * @description Stores project view stats. Publicly writeable (counters), but only readable by admins.
+     * @path /project_stats/{projectId}
+     */
+    match /project_stats/{projectId} {
+      // Anyone (even public) can increment counters
+      allow create, update: if true;
+      // Only admins can see the data
+      allow read: if isAdmin();
     }
   }
 }
