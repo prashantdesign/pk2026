@@ -52,10 +52,10 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Skeleton className="h-80 w-full" />
-            <Skeleton className="h-80 w-full" />
-            <Skeleton className="h-80 w-full" />
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-8">
+            <div className="mb-8 break-inside-avoid"><Skeleton className="h-80 w-full" /></div>
+            <div className="mb-8 break-inside-avoid"><Skeleton className="h-96 w-full" /></div>
+            <div className="mb-8 break-inside-avoid"><Skeleton className="h-64 w-full" /></div>
           </div>
         ) : (
           <>
@@ -77,19 +77,22 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
               ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="columns-1 md:columns-2 lg:columns-3 gap-8">
               {filteredProjects.map((project, index) => (
-                <div key={project.id} className={`animate-fade-in-up`} style={{animationDelay: `${600 + index * 150}ms`}}>
+                <div key={project.id} className={`mb-8 break-inside-avoid animate-fade-in-up`} style={{animationDelay: `${600 + index * 150}ms`}}>
                   <Card 
-                    className="overflow-hidden group cursor-pointer h-full flex flex-col" 
+                    className="overflow-hidden group cursor-pointer flex flex-col"
                     onClick={() => onProjectClick(project)}
                   >
-                    <CardContent className="p-0 relative aspect-[4/3]">
+                    <CardContent className="p-0 relative">
                       <Image
                         src={project.imageUrl}
                         alt={project.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        width={0}
+                        height={0}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        style={{ width: '100%', height: 'auto' }}
+                        className="w-full h-auto group-hover:scale-105 transition-transform duration-300"
                         data-ai-hint="project image"
                       />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/50 transition-colors duration-300" />

@@ -51,11 +51,11 @@ export default function GallerySection({ content }: GallerySectionProps) {
         </div>
 
         {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="aspect-square w-full" />
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+                <div className="mb-4 break-inside-avoid"><Skeleton className="aspect-square w-full" /></div>
+                <div className="mb-4 break-inside-avoid"><Skeleton className="aspect-[4/3] w-full" /></div>
+                <div className="mb-4 break-inside-avoid"><Skeleton className="aspect-square w-full" /></div>
+                <div className="mb-4 break-inside-avoid"><Skeleton className="aspect-[3/4] w-full" /></div>
             </div>
         ) : (
             <>
@@ -77,16 +77,19 @@ export default function GallerySection({ content }: GallerySectionProps) {
                     ))}
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
                     {filteredImages.map((image, index) => (
-                        <div key={image.id} className={`animate-fade-in-up`} style={{animationDelay: `${600 + index * 100}ms`}}>
+                        <div key={image.id} className={`mb-4 break-inside-avoid animate-fade-in-up`} style={{animationDelay: `${600 + index * 100}ms`}}>
                         <Card className="overflow-hidden group cursor-pointer">
-                            <CardContent className="p-0 relative aspect-square">
+                            <CardContent className="p-0 relative">
                             <Image
                                 src={image.imageUrl}
                                 alt={image.title}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                width={0}
+                                height={0}
+                                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                style={{ width: '100%', height: 'auto' }}
+                                className="w-full h-auto group-hover:scale-105 transition-transform duration-300"
                                 data-ai-hint="gallery image"
                             />
                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">

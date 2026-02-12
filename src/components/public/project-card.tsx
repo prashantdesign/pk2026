@@ -17,14 +17,15 @@ const ProjectCard = ({ project, onProjectClick }: ProjectCardProps) => {
       onClick={() => onProjectClick(project)}
     >
       <CardHeader className="p-0">
-        <div className="relative h-60 w-full">
+        <div className="relative w-full">
           <Image
             src={project.mainImageUrl}
             alt={project.title}
-            fill
+            width={0}
+            height={0}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            style={{objectFit: 'cover'}}
-            className="transition-transform duration-300 group-hover:scale-105"
+            style={{ width: '100%', height: 'auto' }}
+            className="w-full h-auto transition-transform duration-300 group-hover:scale-105"
           />
            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
            <div className="absolute bottom-4 left-4">
