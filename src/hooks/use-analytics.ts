@@ -1,6 +1,6 @@
 'use client';
 
-import { useFirestore } from '@/firebase/provider';
+import { useFirestore } from '@/firebase';
 import { doc, setDoc, updateDoc, increment, getDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { useCallback } from 'react';
 
@@ -18,7 +18,7 @@ export interface ProjectStats {
 }
 
 export function useAnalytics() {
-  const { firestore } = useFirestore();
+  const firestore = useFirestore();
 
   const trackPageView = useCallback(async (pageType: 'home' | 'project', projectId?: string, projectName?: string) => {
     if (!firestore) return;

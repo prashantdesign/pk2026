@@ -6,7 +6,7 @@ import type { SiteContent } from '@/types';
 
 const AboutSection = ({ content }: { content: SiteContent | null }) => {
   return (
-    <section id="about" className="py-24 bg-secondary">
+    <section id="about" className="py-24 bg-background">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="animate-fade-in-up">

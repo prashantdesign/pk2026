@@ -54,10 +54,11 @@ export default function GallerySection({ content }: GallerySectionProps) {
 
         {isLoading ? (
             <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
-                <div className="mb-4 break-inside-avoid"><Skeleton className="aspect-square w-full" /></div>
-                <div className="mb-4 break-inside-avoid"><Skeleton className="aspect-[4/3] w-full" /></div>
-                <div className="mb-4 break-inside-avoid"><Skeleton className="aspect-square w-full" /></div>
-                <div className="mb-4 break-inside-avoid"><Skeleton className="aspect-[3/4] w-full" /></div>
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="mb-4 break-inside-avoid">
+                         <Skeleton className={`w-full rounded-xl ${i % 3 === 0 ? 'aspect-square' : i % 3 === 1 ? 'aspect-[3/4]' : 'aspect-[4/3]'}`} />
+                    </div>
+                ))}
             </div>
         ) : (
             <>

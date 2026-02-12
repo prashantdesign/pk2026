@@ -42,7 +42,7 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
   const isLoading = projectsLoading || categoriesLoading;
 
   return (
-    <section id="work" className="py-16 md:py-24 bg-secondary overflow-hidden">
+    <section id="work" className="py-16 md:py-24 bg-background overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <FadeIn>
@@ -61,9 +61,11 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
 
         {isLoading ? (
           <div className="columns-1 md:columns-2 lg:columns-3 gap-8">
-            <div className="mb-8 break-inside-avoid"><Skeleton className="h-80 w-full" /></div>
-            <div className="mb-8 break-inside-avoid"><Skeleton className="h-96 w-full" /></div>
-            <div className="mb-8 break-inside-avoid"><Skeleton className="h-64 w-full" /></div>
+              {Array.from({ length: 6 }).map((_, i) => (
+                 <div key={i} className="mb-8 break-inside-avoid">
+                    <Skeleton className={`w-full rounded-xl ${i % 2 === 0 ? 'h-96' : 'h-64'}`} />
+                 </div>
+              ))}
           </div>
         ) : (
           <>
