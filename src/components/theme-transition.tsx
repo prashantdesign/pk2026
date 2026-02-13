@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface ThemeTransitionProps {
   targetTheme: 'light' | 'dark';
@@ -10,18 +10,29 @@ interface ThemeTransitionProps {
 }
 
 export function ThemeTransition({ targetTheme, onCovered, onComplete }: ThemeTransitionProps) {
+  const isCompleteRef = useRef(false);
+
   const handleAnimationComplete = () => {
+    if (isCompleteRef.current) return;
+    isCompleteRef.current = true;
+
     // When the wipe reaches the bottom (100% height):
     // 1. Switch the global theme (onCovered).
     onCovered();
     // 2. Unmount the transition component (onComplete).
-    // The underlying app is now the new theme.
-    // The "Neon Line" at the bottom of the overlay will disappear instantly.
-    // To make this smooth, we can have the overlay persist as the new background?
-    // No, since the overlay IS the new background color, removing it just reveals the
-    // identical app background underneath.
     onComplete();
   };
+
+  // Failsafe: Ensure cleanup happens even if animation callback misses
+  useEffect(() => {
+    // Animation duration is 0.8s (800ms)
+    // Set timeout to 900ms to allow a small buffer
+    const timer = setTimeout(() => {
+      handleAnimationComplete();
+    }, 900);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const variants = {
     initial: { height: '0%' },
