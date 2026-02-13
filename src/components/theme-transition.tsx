@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import React from 'react';
-import { ThemeCharacter } from './animations/theme-character';
 
 interface ThemeTransitionProps {
   targetTheme: 'light' | 'dark';
@@ -16,8 +15,11 @@ export function ThemeTransition({ targetTheme, onCovered, onComplete }: ThemeTra
     // 1. Switch the global theme (onCovered).
     onCovered();
     // 2. Unmount the transition component (onComplete).
-    // Since the curtain is the same color as the new theme background,
-    // removing it immediately should be seamless.
+    // The underlying app is now the new theme.
+    // The "Neon Line" at the bottom of the overlay will disappear instantly.
+    // To make this smooth, we can have the overlay persist as the new background?
+    // No, since the overlay IS the new background color, removing it just reveals the
+    // identical app background underneath.
     onComplete();
   };
 
@@ -31,29 +33,31 @@ export function ThemeTransition({ targetTheme, onCovered, onComplete }: ThemeTra
   // Light: #ffffff
   const bgColor = targetTheme === 'dark' ? '#09090b' : '#ffffff';
 
-  // Character color logic:
-  // If targetTheme is 'dark' (curtain is black), character should be 'light' (white) to contrast.
-  // If targetTheme is 'light' (curtain is white), character should be 'dark' (black) to contrast.
-  const characterTheme = targetTheme === 'dark' ? 'light' : 'dark';
+  // Neon Line Color (Primary Purple/Violet)
+  // Based on --primary: 262.1 83.3% 57.8% -> Roughly #8b5cf6 (Tailwind violet-500)
+  const neonColor = '#8b5cf6';
 
   return (
     <motion.div
-      className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none overflow-hidden"
+      className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none overflow-hidden flex flex-col justify-end"
       style={{ backgroundColor: bgColor }}
       initial="initial"
       animate="animate"
       variants={variants}
-      transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       onAnimationComplete={handleAnimationComplete}
     >
       {/*
-        Character is positioned absolutely at the bottom center of the curtain.
-        Since the container grows downwards, 'bottom: 0' keeps it at the leading edge.
+        The Neon Line is positioned at the BOTTOM of the expanding container.
+        Since the container grows downwards, 'bottom-0' keeps it at the leading edge.
       */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full flex justify-center pb-0 translate-y-1/2">
-         {/* translate-y-1/2 moves the character slightly down so it looks like it's pulling the edge */}
-         <ThemeCharacter theme={characterTheme} />
-      </div>
+      <div
+        className="w-full h-1 relative"
+        style={{
+            backgroundColor: neonColor,
+            boxShadow: `0 0 10px ${neonColor}, 0 0 20px ${neonColor}, 0 0 40px ${neonColor}`
+        }}
+      />
     </motion.div>
   );
 }
