@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext, ReactNode, useMemo, useCallback } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useMemo } from 'react';
 import { doc } from 'firebase/firestore';
 import { useFirestore, useDoc } from '@/firebase';
 import type { SiteContent } from '@/types';
 import LoadingLogo from '@/components/loading-logo';
-import { ThemeTransition } from '@/components/theme-transition';
 
 type Theme = 'light' | 'dark';
 
@@ -15,15 +14,11 @@ interface ThemeProviderProps {
 
 const ThemeProviderContext = createContext<{
   theme: Theme,
-  setTheme: (theme: Theme) => void,
-  toggleTheme: () => void
+  setTheme: (theme: Theme) => void
 } | undefined>(undefined);
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>('dark'); // Default to dark
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [nextTheme, setNextTheme] = useState<Theme | null>(null);
-
   const firestore = useFirestore();
   
   const siteContentRef = useMemo(() => {
@@ -44,24 +39,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     root.classList.add(theme);
   }, [theme]);
 
-  const toggleTheme = useCallback(() => {
-    if (isTransitioning) return;
-    const targetTheme = theme === 'light' ? 'dark' : 'light';
-    setNextTheme(targetTheme);
-    setIsTransitioning(true);
-  }, [theme, isTransitioning]);
-
-  const handleCovered = useCallback(() => {
-    if (nextTheme) {
-      setTheme(nextTheme);
-    }
-  }, [nextTheme]);
-
-  const handleComplete = useCallback(() => {
-    setIsTransitioning(false);
-    setNextTheme(null);
-  }, []);
-
   if (loading) {
     // This will prevent FOUC by showing a loader until the theme is fetched.
      return (
@@ -72,15 +49,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }
 
   return (
-      <ThemeProviderContext.Provider value={{ theme, setTheme, toggleTheme }}>
+      <ThemeProviderContext.Provider value={{ theme, setTheme }}>
           {children}
-          {isTransitioning && nextTheme && (
-            <ThemeTransition
-              targetTheme={nextTheme}
-              onCovered={handleCovered}
-              onComplete={handleComplete}
-            />
-          )}
       </ThemeProviderContext.Provider>
   )
 }
