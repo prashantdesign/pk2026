@@ -16,27 +16,30 @@ export function ThemeTransition({ targetTheme, onCovered, onComplete }: ThemeTra
     if (isCompleteRef.current) return;
     isCompleteRef.current = true;
 
-    // When the wipe reaches the bottom (100% height):
-    // 1. Switch the global theme (onCovered).
+    // 1. Switch the global theme (onCovered)
     onCovered();
-    // 2. Unmount the transition component (onComplete).
+    // 2. Unmount the transition component (onComplete)
+    // The overlay disappears, revealing the new theme underneath.
     onComplete();
   };
 
   // Failsafe: Ensure cleanup happens even if animation callback misses
   useEffect(() => {
-    // Animation duration is 0.8s (800ms)
-    // Set timeout to 900ms to allow a small buffer
+    // Animation duration is 0.7s (700ms)
+    // Set timeout to 800ms
     const timer = setTimeout(() => {
       handleAnimationComplete();
-    }, 900);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, []);
 
+  // Use a simple circle clip path originating from top-right corner (approx toggle button location)
+  // Initial: Circle size 0%
+  // Animate: Circle size 150% (enough to cover the diagonal of the screen)
   const variants = {
-    initial: { height: '0%' },
-    animate: { height: '100%' },
+    initial: { clipPath: `circle(0% at calc(100% - 3rem) 3rem)` },
+    animate: { clipPath: `circle(150% at calc(100% - 3rem) 3rem)` },
   };
 
   // Hardcoded colors to match the theme variables without relying on CSS variables that change mid-animation
@@ -44,31 +47,15 @@ export function ThemeTransition({ targetTheme, onCovered, onComplete }: ThemeTra
   // Light: #ffffff
   const bgColor = targetTheme === 'dark' ? '#09090b' : '#ffffff';
 
-  // Neon Line Color (Primary Purple/Violet)
-  // Based on --primary: 262.1 83.3% 57.8% -> Roughly #8b5cf6 (Tailwind violet-500)
-  const neonColor = '#8b5cf6';
-
   return (
     <motion.div
-      className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none overflow-hidden flex flex-col justify-end"
+      className="fixed inset-0 z-[9999] pointer-events-none"
       style={{ backgroundColor: bgColor }}
       initial="initial"
       animate="animate"
       variants={variants}
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.7, ease: "easeInOut" }}
       onAnimationComplete={handleAnimationComplete}
-    >
-      {/*
-        The Neon Line is positioned at the BOTTOM of the expanding container.
-        Since the container grows downwards, 'bottom-0' keeps it at the leading edge.
-      */}
-      <div
-        className="w-full h-1 relative"
-        style={{
-            backgroundColor: neonColor,
-            boxShadow: `0 0 10px ${neonColor}, 0 0 20px ${neonColor}, 0 0 40px ${neonColor}`
-        }}
-      />
-    </motion.div>
+    />
   );
 }
