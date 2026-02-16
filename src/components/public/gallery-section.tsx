@@ -42,7 +42,7 @@ export default function GallerySection({ content }: GallerySectionProps) {
     <section id="gallery" className="py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight animate-fade-in-up glow-text">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight animate-fade-in-up">
             {content?.gallerySectionTitle || 'Gallery'}
           </h2>
           {content?.gallerySectionDescription && (
@@ -64,18 +64,16 @@ export default function GallerySection({ content }: GallerySectionProps) {
             <>
                 <div className="flex justify-center flex-wrap gap-2 mb-12 animate-fade-in-up animation-delay-600">
                     <Button
-                        variant={selectedCategory === 'all' ? 'glow' : 'outline'}
+                        variant={selectedCategory === 'all' ? 'default' : 'outline'}
                         onClick={() => setSelectedCategory('all')}
-                        className="rounded-full transition-all duration-300"
                     >
                         All
                     </Button>
                     {categories?.map((cat) => (
                         <Button
                         key={cat.id}
-                        variant={selectedCategory === cat.id ? 'glow' : 'outline'}
+                        variant={selectedCategory === cat.id ? 'default' : 'outline'}
                         onClick={() => setSelectedCategory(cat.id)}
-                        className="rounded-full transition-all duration-300"
                         >
                         {cat.name}
                         </Button>
@@ -85,7 +83,7 @@ export default function GallerySection({ content }: GallerySectionProps) {
                 <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
                     {filteredImages.map((image, index) => (
                         <div key={image.id} className={`mb-4 break-inside-avoid animate-fade-in-up`} style={{animationDelay: `${600 + index * 100}ms`}}>
-                        <Card className="overflow-hidden group cursor-pointer hover:shadow-[0_0_15px_hsla(var(--primary)/0.3)] transition-all duration-300" onClick={() => setSelectedImageIndex(index)}>
+                        <Card className="overflow-hidden group cursor-pointer" onClick={() => setSelectedImageIndex(index)}>
                             <CardContent className="p-0 relative">
                             <Image
                                 src={image.imageUrl}

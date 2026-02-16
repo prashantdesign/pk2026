@@ -45,7 +45,7 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <FadeIn>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight glow-text">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               {content?.portfolioSectionTitle || 'My Work'}
             </h2>
           </FadeIn>
@@ -71,18 +71,18 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
             <FadeIn delay={0.4} direction="up">
               <div className="flex justify-center flex-wrap gap-2 mb-12">
                 <Button
-                  variant={selectedCategory === 'all' ? 'glow' : 'outline'}
+                  variant={selectedCategory === 'all' ? 'default' : 'outline'}
                   onClick={() => setSelectedCategory('all')}
-                  className="rounded-full transition-all duration-300"
+                  className="rounded-full"
                 >
                   All
                 </Button>
                 {categories?.map((cat) => (
                   <Button
                     key={cat.id}
-                    variant={selectedCategory === cat.id ? 'glow' : 'outline'}
+                    variant={selectedCategory === cat.id ? 'default' : 'outline'}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className="rounded-full transition-all duration-300"
+                    className="rounded-full"
                   >
                     {cat.name}
                   </Button>
@@ -104,7 +104,7 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
                   >
                     <HoverCard>
                       <Card
-                        className="overflow-hidden group cursor-pointer flex flex-col border-none shadow-lg hover:shadow-[0_0_25px_hsla(var(--primary)/0.4)] transition-all duration-500"
+                        className="overflow-hidden group cursor-pointer flex flex-col border-none shadow-lg hover:shadow-2xl transition-all duration-300"
                         onClick={() => onProjectClick(project)}
                       >
                         <CardContent className="p-0 relative">
@@ -120,7 +120,7 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
                           <div className="absolute bottom-0 left-0 w-full p-6 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                            <h3 className="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors">{project.title}</h3>
+                            <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
                             <p className="text-sm text-white/90 line-clamp-2">{project.description}</p>
                           </div>
                         </CardContent>

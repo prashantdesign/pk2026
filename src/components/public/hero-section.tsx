@@ -24,7 +24,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
 
       <div className="container relative z-10 px-4 mx-auto text-center">
         <FadeIn>
-          <div className="mb-6 relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-background shadow-xl glow-strong">
+          <div className="mb-6 relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-background shadow-xl">
             {content?.heroImage ? (
                 <Image
                     src={content.heroImage}
@@ -45,7 +45,7 @@ export default function HeroSection({ content }: HeroSectionProps) {
           <span className="block mb-2 animate-fade-in-up">
             {content?.heroTitle || "Hi, I'm a Designer"}
           </span>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400 animate-fade-in-up animation-delay-300 glow-text">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400 animate-fade-in-up animation-delay-300">
             <TypingText text={content?.heroSubtitle || "Building Digital Experiences"} delay={1000} />
           </span>
         </h1>
@@ -57,12 +57,12 @@ export default function HeroSection({ content }: HeroSectionProps) {
         </FadeIn>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up animation-delay-600">
-          <Button asChild size="lg" variant="glow" className="min-w-[160px]">
+          <Button asChild size="lg" className="min-w-[160px]">
             <Link href="#work">
               {content?.heroCtaText || "View My Work"}
             </Link>
           </Button>
-          <Button asChild size="lg" variant="outline" className="min-w-[160px] hover:glow-outline transition-all duration-300">
+          <Button asChild size="lg" variant="outline" className="min-w-[160px]">
             <Link href="#contact">
               Contact Me
             </Link>
