@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     if (!firestore) return null;
     return doc(firestore, 'siteContent', 'global');
   }, [firestore]);
-  const { data: siteContent, loading } = useDoc<SiteContent & { theme?: Theme }>(siteContentRef);
+  const { data: siteContent } = useDoc<SiteContent & { theme?: Theme }>(siteContentRef);
 
   useEffect(() => {
     if (siteContent?.theme) {
@@ -40,13 +40,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     root.classList.add(theme);
   }, [theme]);
 
-  if (loading) {
-     return (
-        <div className="flex h-screen w-full items-center justify-center bg-background">
-            <LoadingLogo />
-        </div>
-    );
-  }
+  // Removed blocking loader to prevent hanging.
+  // The app will render immediately with the default theme ('dark')
+  // and update once the siteContent is loaded.
 
   return (
       <ThemeProviderContext.Provider value={{ theme, setTheme }}>
