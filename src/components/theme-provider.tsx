@@ -5,6 +5,7 @@ import { doc } from 'firebase/firestore';
 import { useFirestore, useDoc } from '@/firebase';
 import type { SiteContent } from '@/types';
 import LoadingLogo from '@/components/loading-logo';
+import { ThemeCustomizer } from '@/components/theme-customizer';
 
 type Theme = 'light' | 'dark';
 
@@ -40,7 +41,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }, [theme]);
 
   if (loading) {
-    // This will prevent FOUC by showing a loader until the theme is fetched.
      return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <LoadingLogo />
@@ -50,6 +50,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   return (
       <ThemeProviderContext.Provider value={{ theme, setTheme }}>
+          <ThemeCustomizer />
           {children}
       </ThemeProviderContext.Provider>
   )
