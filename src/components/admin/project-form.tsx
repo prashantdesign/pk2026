@@ -24,6 +24,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
+import { BulkProjectImagesModal } from '@/components/admin/bulk-project-images-modal';
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -314,7 +315,8 @@ export default function ProjectForm({ project }: { project?: Project }) {
                     )}
                   </div>
                 ))}
-                <div className="flex items-center gap-4 pt-4">
+                <div className="flex flex-wrap items-center gap-4 pt-4">
+                  <BulkProjectImagesModal onImport={(urls) => urls.forEach(url => append(url))} />
                   <Button type="button" variant="outline" size="sm" onClick={() => append("")}>
                     Add by URL
                   </Button>
