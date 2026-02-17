@@ -21,13 +21,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Pencil, Trash2, GripVertical } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2, GripVertical, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { BulkImportModal } from '@/components/admin/bulk-import-modal';
 import {
   DndContext,
   closestCenter,
@@ -169,7 +170,7 @@ export default function GalleryClient() {
     return query(collection(firestore, 'galleryImages'), orderBy('order', 'asc'));
   }, [firestore]);
 
-  const { data: images, loading } = useCollection<GalleryImage>(galleryQuery);
+  const { data: images, loading, refresh } = useCollection<GalleryImage>(galleryQuery);
 
   useEffect(() => {
     if (images) {
@@ -240,6 +241,19 @@ export default function GalleryClient() {
 
   return (
     <>
+        <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold tracking-tight">Gallery</h1>
+            <div className="flex gap-2">
+                <BulkImportModal onSuccess={() => {
+                    toast({ title: 'Images imported successfully.' });
+                    refresh?.(); // Optional if real-time listener updates automatically
+                }} />
+                <Button onClick={() => router.push('/admin/gallery/new')}>
+                    <Plus className="mr-2 h-4 w-4" /> Add Image
+                </Button>
+            </div>
+        </div>
+
         <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
