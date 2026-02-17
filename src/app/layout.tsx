@@ -7,6 +7,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import { FirebaseErrorListener } from '@/components/firebase-error-listener';
 import { ScrollProgress } from '@/components/ui/scroll-progress';
 import PageTransition from '@/components/page-transition';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -52,6 +53,7 @@ export default function RootLayout({
             <FirebaseErrorListener />
           </ThemeProvider>
         </FirebaseClientProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
