@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { X, Sparkles } from 'lucide-react';
 import type { Project, SiteContent, ProjectCategory } from '@/types';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -106,6 +107,27 @@ export default function ProjectForm({ project }: { project?: Project }) {
     control: form.control,
     name: "projectImages",
   });
+
+  const [isBulkAddOpen, setIsBulkAddOpen] = useState(false);
+  const [bulkAddUrls, setBulkAddUrls] = useState("");
+
+  const handleBulkAdd = () => {
+      const urls = bulkAddUrls.split('\n')
+          .map(url => url.trim())
+          .filter(url => url.length > 0)
+          .map(url => convertGoogleDriveLink(url));
+
+      if (urls.length === 0) {
+          toast({ variant: "destructive", title: "No valid URLs found" });
+          return;
+      }
+
+      urls.forEach(url => append(url));
+
+      setBulkAddUrls("");
+      setIsBulkAddOpen(false);
+      toast({ title: `Added ${urls.length} images` });
+  };
 
   const handleUrlBlur = (e: React.FocusEvent<HTMLInputElement>, field: any) => {
     const convertedUrl = convertGoogleDriveLink(e.target.value);
@@ -306,6 +328,29 @@ export default function ProjectForm({ project }: { project?: Project }) {
                   <Button type="button" variant="outline" size="sm" onClick={() => append("")}>
                     Add by URL
                   </Button>
+                  <Dialog open={isBulkAddOpen} onOpenChange={setIsBulkAddOpen}>
+                    <DialogTrigger asChild>
+                      <Button type="button" variant="outline" size="sm">
+                        Bulk Add
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Bulk Add Images</DialogTitle>
+                        <DialogDescription>Paste image URLs, one per line.</DialogDescription>
+                      </DialogHeader>
+                      <Textarea
+                        value={bulkAddUrls}
+                        onChange={(e) => setBulkAddUrls(e.target.value)}
+                        placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
+                        className="min-h-[200px]"
+                      />
+                      <DialogFooter>
+                        <Button type="button" variant="secondary" onClick={() => setIsBulkAddOpen(false)}>Cancel</Button>
+                        <Button type="button" onClick={handleBulkAdd}>Add Images</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                   <div className="flex-grow">
                     <FormLabel className="text-sm font-normal">Or upload to add</FormLabel>
                     <Input type="file" onChange={(e) => handleImageUpload(e, 'projectImages')} disabled={isUploading || isGenerating} />
