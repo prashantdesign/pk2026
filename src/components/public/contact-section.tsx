@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import type { SiteContent } from '@/types';
 
 const initialState: FormState = {
   message: '',
@@ -24,10 +25,17 @@ function SubmitButton() {
   );
 }
 
-export default function ContactSection() {
+interface ContactSectionProps {
+  content?: SiteContent | null;
+}
+
+export default function ContactSection({ content }: ContactSectionProps) {
   const [state, formAction] = useActionState(submitContactForm, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+
+  const email = content?.socials?.email;
+  const phone = content?.socials?.contactNumber;
 
   useEffect(() => {
     if (state.message) {
@@ -72,6 +80,21 @@ export default function ContactSection() {
             </div>
             <SubmitButton />
           </form>
+
+          {(email || phone) && (
+            <div className="mt-8 text-center space-y-2 pt-6 border-t">
+              {email && (
+                <p className="text-muted-foreground">
+                  Email: <a href={`mailto:${email}`} className="font-medium hover:text-primary transition-colors">{email}</a>
+                </p>
+              )}
+              {phone && (
+                <p className="text-muted-foreground">
+                  Phone: <a href={`tel:${phone}`} className="font-medium hover:text-primary transition-colors">{phone}</a>
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </section>

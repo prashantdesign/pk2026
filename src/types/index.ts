@@ -9,6 +9,7 @@ export interface Project {
   projectImages: string[];
   toolsUsed: string;
   order: number;
+  showOnHome?: boolean;
   problem?: string;
   solution?: string;
   outcome?: string;
@@ -22,6 +23,7 @@ export interface GalleryImage {
   imageUrl: string;
   galleryCategoryId: string;
   order: number;
+  showOnHome?: boolean;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
@@ -56,6 +58,7 @@ export interface SiteContent {
     twitter?: string;
     instagram?: string;
     email?: string;
+    contactNumber?: string;
   };
   aiSettings?: {
     geminiModel?: string;

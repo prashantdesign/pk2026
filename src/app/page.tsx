@@ -74,13 +74,31 @@ export default function Home() {
       <Header siteName={siteContent?.siteName} />
       <main className="flex-grow">
         <HeroSection content={siteContent} />
-        {(siteContent?.isAboutSectionVisible ?? true) && <AboutSection content={siteContent} />}
         {(siteContent?.isStatsSectionVisible ?? true) && <StatsSection content={siteContent} />}
         {(siteContent?.isSkillsSectionVisible ?? true) && <SkillsSection content={siteContent} />}
         {(siteContent?.isToolsSectionVisible ?? true) && <ToolsSection content={siteContent} />}
-        {(siteContent?.isGallerySectionVisible ?? true) && <GallerySection content={siteContent} />}
-        {(siteContent?.isPortfolioSectionVisible ?? true) && <PortfolioSection content={siteContent} onProjectClick={handleProjectClick} />}
-        <ContactSection />
+
+        {(siteContent?.isGallerySectionVisible ?? true) && (
+          <GallerySection
+            content={siteContent}
+            limit={6}
+            showFilters={false}
+            showViewAll={true}
+          />
+        )}
+
+        {(siteContent?.isPortfolioSectionVisible ?? true) && (
+          <PortfolioSection
+            content={siteContent}
+            onProjectClick={handleProjectClick}
+            limit={4}
+            showFilters={false}
+            showViewAll={true}
+          />
+        )}
+
+        {(siteContent?.isAboutSectionVisible ?? true) && <AboutSection content={siteContent} />}
+        <ContactSection content={siteContent} />
       </main>
       <Footer content={siteContent} />
       {selectedProject && (

@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { X, Sparkles } from 'lucide-react';
 import type { Project, SiteContent, ProjectCategory } from '@/types';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -33,6 +34,7 @@ const formSchema = z.object({
   projectImages: z.array(z.string().url()),
   toolsUsed: z.string(),
   order: z.coerce.number(),
+  showOnHome: z.boolean().default(true),
   problem: z.string().optional(),
   solution: z.string().optional(),
   outcome: z.string().optional(),
@@ -92,6 +94,7 @@ export default function ProjectForm({ project }: { project?: Project }) {
     projectImages: project?.projectImages || [],
     toolsUsed: project?.toolsUsed || '',
     order: project?.order || 0,
+    showOnHome: project?.showOnHome ?? true,
     problem: project?.problem || '',
     solution: project?.solution || '',
     outcome: project?.outcome || '',
@@ -227,6 +230,23 @@ export default function ProjectForm({ project }: { project?: Project }) {
              <FormField control={form.control} name="order" render={({ field }) => (
                 <FormItem><FormLabel>Order</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
             )} />
+             <FormField
+                control={form.control}
+                name="showOnHome"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Show on Home Page</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
           </div>
         </div>
 

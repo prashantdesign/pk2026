@@ -7,13 +7,22 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Skeleton } from '../ui/skeleton';
 
 interface GallerySectionProps {
   content: SiteContent | null;
+  limit?: number;
+  showFilters?: boolean;
+  showViewAll?: boolean;
 }
 
-export default function GallerySection({ content }: GallerySectionProps) {
+export default function GallerySection({
+  content,
+  limit,
+  showFilters = true,
+  showViewAll = false
+}: GallerySectionProps) {
   const firestore = useFirestore();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -30,9 +39,23 @@ export default function GallerySection({ content }: GallerySectionProps) {
 
   const filteredImages = useMemo(() => {
     if (!images) return [];
-    if (selectedCategory === 'all') return images;
-    return images.filter(img => img.galleryCategoryId === selectedCategory);
-  }, [images, selectedCategory]);
+    let result = images;
+
+    if (limit) {
+      // If limiting (Home Page), respect the showOnHome toggle
+      result = result.filter(img => img.showOnHome !== false);
+    }
+
+    if (selectedCategory !== 'all') {
+      result = result.filter(img => img.galleryCategoryId === selectedCategory);
+    }
+
+    if (limit) {
+      result = result.slice(0, limit);
+    }
+
+    return result;
+  }, [images, selectedCategory, limit]);
   
   const isLoading = imagesLoading || categoriesLoading;
 
@@ -59,23 +82,25 @@ export default function GallerySection({ content }: GallerySectionProps) {
             </div>
         ) : (
             <>
-                <div className="flex justify-center flex-wrap gap-2 mb-12 animate-fade-in-up animation-delay-600">
-                    <Button
-                        variant={selectedCategory === 'all' ? 'default' : 'outline'}
-                        onClick={() => setSelectedCategory('all')}
-                    >
-                        All
-                    </Button>
-                    {categories?.map((cat) => (
-                        <Button
-                        key={cat.id}
-                        variant={selectedCategory === cat.id ? 'default' : 'outline'}
-                        onClick={() => setSelectedCategory(cat.id)}
-                        >
-                        {cat.name}
-                        </Button>
-                    ))}
-                </div>
+                {showFilters && (
+                  <div className="flex justify-center flex-wrap gap-2 mb-12 animate-fade-in-up animation-delay-600">
+                      <Button
+                          variant={selectedCategory === 'all' ? 'default' : 'outline'}
+                          onClick={() => setSelectedCategory('all')}
+                      >
+                          All
+                      </Button>
+                      {categories?.map((cat) => (
+                          <Button
+                          key={cat.id}
+                          variant={selectedCategory === cat.id ? 'default' : 'outline'}
+                          onClick={() => setSelectedCategory(cat.id)}
+                          >
+                          {cat.name}
+                          </Button>
+                      ))}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {filteredImages.map((image, index) => (
@@ -101,6 +126,14 @@ export default function GallerySection({ content }: GallerySectionProps) {
                     <div className="text-center col-span-full py-12 text-muted-foreground">
                         No images found in this category.
                     </div>
+                )}
+
+                {showViewAll && (
+                  <div className="flex justify-center mt-12 animate-fade-in-up animation-delay-600">
+                    <Link href="/gallery">
+                      <Button size="lg">View My Work</Button>
+                    </Link>
+                  </div>
                 )}
             </>
         )}
