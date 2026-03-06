@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import type { GalleryImage, GalleryCategory } from '@/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -26,6 +27,7 @@ const formSchema = z.object({
   imageUrl: z.string().url("A valid image URL is required"),
   galleryCategoryId: z.string().min(1, "Category is required"),
   order: z.coerce.number().default(0),
+  showOnHome: z.boolean().default(true),
 });
 
 type GalleryFormValues = z.infer<typeof formSchema>;
@@ -74,6 +76,7 @@ export default function GalleryForm({ image }: { image?: GalleryImage }) {
     imageUrl: image?.imageUrl || '',
     galleryCategoryId: image?.galleryCategoryId || '',
     order: image?.order || 0,
+    showOnHome: image?.showOnHome ?? true,
   };
 
   const form = useForm<GalleryFormValues>({
@@ -156,6 +159,24 @@ export default function GalleryForm({ image }: { image?: GalleryImage }) {
         <FormField control={form.control} name="order" render={({ field }) => (
             <FormItem><FormLabel>Order</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
         )} />
+
+        <FormField
+          control={form.control}
+          name="showOnHome"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Show on Home Page</FormLabel>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
 
         <div className="space-y-2">
           <FormLabel>Image</FormLabel>

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import Logo from '@/components/logo';
+import Link from 'next/link';
 
 const Header = ({ siteName }: { siteName?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,10 +17,10 @@ const Header = ({ siteName }: { siteName?: string }) => {
   }, []);
 
   const navItems = [
-    { label: 'About', href: '#about' },
-    { label: 'Work', href: '#work' },
-    { label: 'Gallery', href: '#gallery' },
-    { label: 'Contact', href: '#contact' },
+    { label: 'About', href: '/#about' },
+    { label: 'Work', href: '/#work' },
+    { label: 'Gallery', href: '/#gallery' },
+    { label: 'Contact', href: '/#contact' },
   ];
 
   return (
@@ -29,19 +30,19 @@ const Header = ({ siteName }: { siteName?: string }) => {
       }`}
     >
       <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-6">
-        <a href="#" className="flex items-center">
+        <Link href="/" className="flex items-center">
           <Logo />
-        </a>
+        </Link>
         <nav className="hidden items-center gap-6 md:flex">
           {navItems.map((item) => (
-            <a
+            <Link
               key={item.label}
               href={item.href}
               className="text-sm font-medium transition-colors hover:text-primary"
               onClick={() => setIsOpen(false)}
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
         <button
@@ -56,14 +57,14 @@ const Header = ({ siteName }: { siteName?: string }) => {
         <div className="md:hidden">
           <nav className="flex flex-col items-center gap-4 bg-background p-4">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.label}
                 href={item.href}
                 className="text-lg font-medium transition-colors hover:text-primary"
                 onClick={() => setIsOpen(false)}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>

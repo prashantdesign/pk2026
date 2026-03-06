@@ -65,6 +65,7 @@ const formSchema = z.object({
   twitter: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   instagram: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   email: z.string().email({ message: "Please enter a valid email." }).optional().or(z.literal('')),
+  contactNumber: z.string().optional(),
 
   geminiModel: z.string().optional(),
   isAiFeatureEnabled: z.boolean().default(true),
@@ -115,6 +116,7 @@ export default function SiteContentForm() {
       twitter: "",
       instagram: "",
       email: "",
+      contactNumber: "",
       geminiModel: "models/gemini-1.5-flash",
       isAiFeatureEnabled: true,
     },
@@ -159,6 +161,7 @@ export default function SiteContentForm() {
         twitter: siteContent.socials?.twitter,
         instagram: siteContent.socials?.instagram,
         email: siteContent.socials?.email,
+        contactNumber: siteContent.socials?.contactNumber,
         geminiModel: siteContent.aiSettings?.geminiModel || 'models/gemini-1.5-flash',
         isAiFeatureEnabled: siteContent.aiSettings?.isAiFeatureEnabled === undefined ? true : siteContent.aiSettings.isAiFeatureEnabled,
       });
@@ -206,6 +209,7 @@ export default function SiteContentForm() {
         twitter: values.twitter,
         instagram: values.instagram,
         email: values.email,
+        contactNumber: values.contactNumber,
       },
       aiSettings: {
         geminiModel: values.geminiModel,
@@ -566,6 +570,14 @@ export default function SiteContentForm() {
                     <FormLabel>Public Contact Email</FormLabel>
                     <FormDescription>The email address displayed publicly on your site.</FormDescription>
                     <FormControl><Input placeholder="your.email@example.com" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+              )} />
+              <FormField control={form.control} name="contactNumber" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Number</FormLabel>
+                    <FormDescription>The phone number displayed publicly on your site.</FormDescription>
+                    <FormControl><Input placeholder="+1 234 567 890" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
               )} />

@@ -7,14 +7,24 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Skeleton } from '../ui/skeleton';
 
 interface PortfolioSectionProps {
   content: SiteContent | null;
   onProjectClick: (project: Project) => void;
+  limit?: number;
+  showFilters?: boolean;
+  showViewAll?: boolean;
 }
 
-export default function PortfolioSection({ content, onProjectClick }: PortfolioSectionProps) {
+export default function PortfolioSection({
+  content,
+  onProjectClick,
+  limit,
+  showFilters = true,
+  showViewAll = false
+}: PortfolioSectionProps) {
   const firestore = useFirestore();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -31,9 +41,22 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
 
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
-    if (selectedCategory === 'all') return projects;
-    return projects.filter(p => p.projectCategoryId === selectedCategory);
-  }, [projects, selectedCategory]);
+    let result = projects;
+
+    if (limit) {
+      result = result.filter(p => p.showOnHome !== false);
+    }
+
+    if (selectedCategory !== 'all') {
+      result = result.filter(p => p.projectCategoryId === selectedCategory);
+    }
+
+    if (limit) {
+      result = result.slice(0, limit);
+    }
+
+    return result;
+  }, [projects, selectedCategory, limit]);
 
   const isLoading = projectsLoading || categoriesLoading;
 
@@ -59,23 +82,25 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
           </div>
         ) : (
           <>
-            <div className="flex justify-center flex-wrap gap-2 mb-12 animate-fade-in-up animation-delay-600">
-              <Button
-                variant={selectedCategory === 'all' ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory('all')}
-              >
-                All
-              </Button>
-              {categories?.map((cat) => (
+            {showFilters && (
+              <div className="flex justify-center flex-wrap gap-2 mb-12 animate-fade-in-up animation-delay-600">
                 <Button
-                  key={cat.id}
-                  variant={selectedCategory === cat.id ? 'default' : 'outline'}
-                  onClick={() => setSelectedCategory(cat.id)}
+                  variant={selectedCategory === 'all' ? 'default' : 'outline'}
+                  onClick={() => setSelectedCategory('all')}
                 >
-                  {cat.name}
+                  All
                 </Button>
-              ))}
-            </div>
+                {categories?.map((cat) => (
+                  <Button
+                    key={cat.id}
+                    variant={selectedCategory === cat.id ? 'default' : 'outline'}
+                    onClick={() => setSelectedCategory(cat.id)}
+                  >
+                    {cat.name}
+                  </Button>
+                ))}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProjects.map((project, index) => (
@@ -107,6 +132,14 @@ export default function PortfolioSection({ content, onProjectClick }: PortfolioS
                     No projects found in this category.
                 </div>
              )}
+
+            {showViewAll && (
+              <div className="flex justify-center mt-12 animate-fade-in-up animation-delay-600">
+                <Link href="/projects">
+                  <Button size="lg">View My Work</Button>
+                </Link>
+              </div>
+            )}
           </>
         )}
       </div>
