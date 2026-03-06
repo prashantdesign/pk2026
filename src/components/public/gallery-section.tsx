@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import { Skeleton } from '../ui/skeleton';
+import { GalleryModal } from './gallery-modal';
 
 interface GallerySectionProps {
   content: SiteContent | null;
@@ -16,6 +17,7 @@ interface GallerySectionProps {
 export default function GallerySection({ content }: GallerySectionProps) {
   const firestore = useFirestore();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   const imagesQuery = useMemoFirebase(() => 
     firestore ? query(collection(firestore, 'galleryImages'), orderBy('order', 'asc')) : null
@@ -51,11 +53,12 @@ export default function GallerySection({ content }: GallerySectionProps) {
         </div>
 
         {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="aspect-square w-full" />
-                <Skeleton className="aspect-square w-full" />
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="mb-4 break-inside-avoid">
+                         <Skeleton className={`w-full rounded-xl ${i % 3 === 0 ? 'aspect-square' : i % 3 === 1 ? 'aspect-[3/4]' : 'aspect-[4/3]'}`} />
+                    </div>
+                ))}
             </div>
         ) : (
             <>
@@ -77,21 +80,21 @@ export default function GallerySection({ content }: GallerySectionProps) {
                     ))}
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
                     {filteredImages.map((image, index) => (
-                        <div key={image.id} className={`animate-fade-in-up`} style={{animationDelay: `${600 + index * 100}ms`}}>
-                        <Card className="overflow-hidden group cursor-pointer">
-                            <CardContent className="p-0 relative aspect-square">
+                        <div key={image.id} className={`mb-4 break-inside-avoid animate-fade-in-up`} style={{animationDelay: `${600 + index * 100}ms`}}>
+                        <Card className="overflow-hidden group cursor-pointer" onClick={() => setSelectedImageIndex(index)}>
+                            <CardContent className="p-0 relative">
                             <Image
                                 src={image.imageUrl}
                                 alt={image.title}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                width={0}
+                                height={0}
+                                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                style={{ width: '100%', height: 'auto' }}
+                                className="w-full h-auto group-hover:scale-105 transition-transform duration-300"
                                 data-ai-hint="gallery image"
                             />
-                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                <p className="text-white text-sm font-medium drop-shadow-md">{image.title}</p>
-                            </div>
                             </CardContent>
                         </Card>
                         </div>
@@ -104,7 +107,17 @@ export default function GallerySection({ content }: GallerySectionProps) {
                 )}
             </>
         )}
+
       </div>
+
+      {filteredImages.length > 0 && selectedImageIndex !== null && (
+        <GalleryModal
+            images={filteredImages}
+            initialIndex={selectedImageIndex}
+            isOpen={selectedImageIndex !== null}
+            onClose={() => setSelectedImageIndex(null)}
+        />
+      )}
     </section>
   );
 }

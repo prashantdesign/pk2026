@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from "@/hooks/use-toast";
 import Logo from '@/components/logo';
+import LoadingLogo from '@/components/loading-logo';
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -86,7 +87,7 @@ export default function LoginPage() {
   if (loading || user) {
       return (
         <div className="flex items-center justify-center h-screen">
-          <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary"></div>
+          <LoadingLogo />
         </div>
       );
   }

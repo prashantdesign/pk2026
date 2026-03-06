@@ -1,4 +1,5 @@
 'use client';
+
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
@@ -21,15 +22,24 @@ import {
   LogOut,
   Images,
   FolderKanban,
+  MessageSquareQuote,
+  LineChart,
 } from 'lucide-react';
 import Logo from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { SiteContent } from '@/types';
 
 const AdminSidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
+  const firestore = useFirestore();
+
+  const siteContentRef = useMemoFirebase(() => firestore ? doc(firestore, 'siteContent', 'global') : null, [firestore]);
+  const { data: siteContent } = useDoc<SiteContent>(siteContentRef);
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -51,10 +61,12 @@ const AdminSidebar = () => {
 
   const menuItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/insights', label: 'Insights', icon: LineChart },
     { href: '/admin/site-content', label: 'Site Content', icon: Palette },
     { href: '/admin/categories', label: 'Categories', icon: FolderKanban },
     { href: '/admin/gallery', label: 'Gallery', icon: Images },
     { href: '/admin/projects', label: 'Projects', icon: Briefcase },
+    { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote },
     { href: '/admin/messages', label: 'Messages', icon: Mails },
     { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
@@ -62,7 +74,7 @@ const AdminSidebar = () => {
   return (
     <Sidebar>
       <SidebarHeader>
-        <Logo />
+        <Logo text={siteContent?.siteName} />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>

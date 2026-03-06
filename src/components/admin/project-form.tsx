@@ -24,6 +24,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
+import { BulkProjectImagesModal } from '@/components/admin/bulk-project-images-modal';
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -36,6 +37,8 @@ const formSchema = z.object({
   problem: z.string().optional(),
   solution: z.string().optional(),
   outcome: z.string().optional(),
+  liveUrl: z.string().url().optional().or(z.literal('')),
+  repoUrl: z.string().url().optional().or(z.literal('')),
 });
 
 type ProjectFormValues = z.infer<typeof formSchema>;
@@ -95,6 +98,8 @@ export default function ProjectForm({ project }: { project?: Project }) {
     problem: project?.problem || '',
     solution: project?.solution || '',
     outcome: project?.outcome || '',
+    liveUrl: project?.liveUrl || '',
+    repoUrl: project?.repoUrl || '',
   };
 
   const form = useForm<ProjectFormValues>({
@@ -195,6 +200,14 @@ export default function ProjectForm({ project }: { project?: Project }) {
             <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem><FormLabel>Short Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
             )} />
+            <div className="grid grid-cols-2 gap-4">
+                <FormField control={form.control} name="liveUrl" render={({ field }) => (
+                    <FormItem><FormLabel>Live URL (Optional)</FormLabel><FormControl><Input placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="repoUrl" render={({ field }) => (
+                    <FormItem><FormLabel>Repo URL (Optional)</FormLabel><FormControl><Input placeholder="https://github.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+            </div>
           </div>
           <div className="space-y-6">
              <FormField
@@ -302,7 +315,8 @@ export default function ProjectForm({ project }: { project?: Project }) {
                     )}
                   </div>
                 ))}
-                <div className="flex items-center gap-4 pt-4">
+                <div className="flex flex-wrap items-center gap-4 pt-4">
+                  <BulkProjectImagesModal onImport={(urls) => urls.forEach(url => append(url))} />
                   <Button type="button" variant="outline" size="sm" onClick={() => append("")}>
                     Add by URL
                   </Button>

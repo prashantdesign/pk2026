@@ -8,7 +8,7 @@ export default function ToolsSection({ content }: { content: SiteContent | null 
   }
 
   return (
-    <section id="tools" className="py-16 md:py-24 bg-secondary">
+    <section id="tools" className="py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto">
             {content.toolsSectionTitle && (
